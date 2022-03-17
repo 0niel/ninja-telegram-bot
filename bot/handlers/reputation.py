@@ -84,8 +84,8 @@ def reputation_callback(update: Update, context: CallbackContext) -> None:
 
         if from_user.update_reputation_at:
             if from_user.is_rep_change_available() is False:
-                update.effective_message.reply_text(
-                    'Вы не можете сейчас изменять кому-то репутацию. Репутацию можно изменять один раз в 15 минут!')
+                message.reply_text(
+                    '❌ Репутацию можно изменять один раз в 10 минут!')
                 return
 
         reputation_change = context.reputation[0]['reputation_change']
@@ -108,11 +108,12 @@ def reputation_callback(update: Update, context: CallbackContext) -> None:
             str(new_user_rep_delta) if new_user_rep_delta > 0 else str(
                 new_user_rep_delta)
 
-        icon = '🔻 ' if reputation_change < 0 else '🔺 '
+        icon = '👎' if reputation_change < 0 else '👍'
 
-        update.effective_message.reply_text(
-            icon + from_username + " ({}, {}) обновил(а) репутацию {} ({}). Теперь у {} {} реп. и {} влияния".format(
-                from_user.reputation, from_user.force, to_username, new_rep, to_username, new_user_rep, new_user_force))
+        context.bot.send_message(message.chat_id,
+                                 f"{icon} *{from_username}* ({from_user.reputation}, {from_user.force}) "
+                                 f"обновил(а) вам репутацию ({new_rep})",
+                                 reply_to_message_id=message.reply_to_message.message_id, parse_mode=ParseMode.MARKDOWN)
 
 
 def show_leaders_callback(update: Update, context: CallbackContext) -> None:
@@ -123,12 +124,18 @@ def show_leaders_callback(update: Update, context: CallbackContext) -> None:
             'На данный момент нет активных участников для формирования рейтинга')
         return
 
+    medals = {0: '🥇', 1: '🥈', 2: '🥉'}
+
     lines = []
     for i in range(len(users)):
-        lines.append(str(i+1) + '. {} - {} репутации и {} влияния'.format(
+        medal = ''
+        if i in medals:
+            medal = medals[i]
+
+        lines.append(str(i+1) + '. {} - {} репутации и {} влияния {}'.format(
             users[i].first_name + ' ' +
             users[i].last_name if users[i].last_name is not None else users[i].first_name,
-            users[i].reputation if users[i].reputation >= 0 else f'({users[i].reputation})', users[i].force))
+            users[i].reputation if users[i].reputation >= 0 else f'({users[i].reputation})', users[i].force, medal))
 
     update.effective_message.reply_text(
         '*Рейтинг:*\n' + escape_markdown('\n'.join(lines)), parse_mode=ParseMode.MARKDOWN)
