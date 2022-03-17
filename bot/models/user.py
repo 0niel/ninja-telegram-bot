@@ -60,7 +60,7 @@ class User(TimedBaseModel):
         seconds = (
             datetime.now() - self.update_reputation_at.replace(tzinfo=None)).total_seconds()
         minutes = (seconds % 3600) // 60
-        return minutes >= 15
+        return minutes >= 10
 
     @staticmethod
     def get_by_rating():
