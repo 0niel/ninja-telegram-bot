@@ -1,6 +1,7 @@
 import logging
 import math
-from telegram import ForceReply, ParseMode, Update
+from bot import config
+from telegram import ForceReply, Message, ParseMode, Update
 from telegram.utils.helpers import escape_markdown
 from telegram.ext import CallbackContext
 from bot.handlers.users import users_updater
@@ -67,6 +68,20 @@ def compute_rep(rep, force):
     return rep * delta
 
 
+def auto_delete_callback(context: CallbackContext) -> None:
+    context.job.context.delete()
+
+
+def auto_delete(message: Message, context: CallbackContext, from_message=None) -> None:
+    if message.chat.id == config.MIREA_NINJA_GROUP_ID:
+        context.job_queue.run_once(
+            auto_delete_callback, 45, context=message)
+
+        if from_message:
+            context.job_queue.run_once(
+                auto_delete_callback, 45, context=from_message)
+
+
 def reputation_callback(update: Update, context: CallbackContext) -> None:
     if context.reputation:
         message = update.effective_message
@@ -84,8 +99,9 @@ def reputation_callback(update: Update, context: CallbackContext) -> None:
 
         if from_user.update_reputation_at:
             if from_user.is_rep_change_available() is False:
-                message.reply_text(
+                new_message = context = message.reply_text(
                     '❌ Репутацию можно изменять один раз в 10 минут!')
+                auto_delete(new_message, context)
                 return
 
         reputation_change = context.reputation[0]['reputation_change']
@@ -110,10 +126,14 @@ def reputation_callback(update: Update, context: CallbackContext) -> None:
 
         icon = '👎' if reputation_change < 0 else '👍'
 
-        context.bot.send_message(message.chat_id,
-                                 f"{icon} *{from_username}* ({from_user.reputation}, {from_user.force}) "
-                                 f"обновил(а) вам репутацию ({new_rep})",
-                                 reply_to_message_id=message.reply_to_message.message_id, parse_mode=ParseMode.MARKDOWN)
+        logger.info(
+            f'{from_username} has updated {to_username} reputation {new_rep}')
+
+        new_message = context.bot.send_message(message.chat_id,
+                                               f"{icon} *{from_username}* ({from_user.reputation}, {from_user.force}) "
+                                               f"обновил(а) вам репутацию ({new_rep})",
+                                               reply_to_message_id=message.reply_to_message.message_id, parse_mode=ParseMode.MARKDOWN)
+        auto_delete(new_message, context)
 
 
 def show_leaders_callback(update: Update, context: CallbackContext) -> None:
@@ -137,17 +157,23 @@ def show_leaders_callback(update: Update, context: CallbackContext) -> None:
             users[i].last_name if users[i].last_name is not None else users[i].first_name,
             users[i].reputation if users[i].reputation >= 0 else f'({users[i].reputation})', users[i].force, medal))
 
-    update.effective_message.reply_text(
+    new_message = update.effective_message.reply_text(
         '*Рейтинг:*\n' + escape_markdown('\n'.join(lines)), parse_mode=ParseMode.MARKDOWN)
+
+    auto_delete(new_message, context, from_message=update.effective_message)
 
 
 def show_self_rating_callback(update: Update, context: CallbackContext) -> None:
     user = User.get(update.effective_message.from_user.id)
 
-    update.effective_message.reply_text(update.effective_message.from_user.first_name +
-                                        ', у вас {} рейтинга и {} очков влияния'.format(user.reputation, user.force))
+    new_message = update.effective_message.reply_text(update.effective_message.from_user.first_name +
+                                                      ', у вас {} рейтинга и {} очков влияния'.format(user.reputation, user.force))
+
+    auto_delete(new_message, context, from_message=update.effective_message)
 
 
 def about_rating_callback(update: Update, context: CallbackContext) -> None:
-    update.effective_message.reply_text(
+    new_message = update.effective_message.reply_text(
         '*Репутация* - это основной показатель вашего рейтинга. Чем выше репутация, тем больше вклада вы внесли в общение в беседе Mirea Ninja.\n\n*Влияние* - это показатель того, насколько ваш голос силен. Сила набирается вслед за репутацией, но не снижается вместе с ней.', parse_mode=ParseMode.MARKDOWN)
+
+    auto_delete(new_message, context, from_message=update.effective_message)

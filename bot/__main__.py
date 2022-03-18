@@ -19,7 +19,7 @@ def main() -> None:
     from bot import handlers
 
     # Create the Updater and pass it your bot's token.
-    updater = Updater(config.TELEGRAM_TOKEN)
+    updater = Updater(config.TELEGRAM_TOKEN, use_context=True)
 
     # Get the dispatcher to register handlers
     dispatcher = updater.dispatcher
