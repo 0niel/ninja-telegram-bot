@@ -1,10 +1,12 @@
 from __future__ import annotations
-import threading
 import sqlalchemy as db
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 from sqlalchemy.sql import expression
 
-from bot.models.db import SESSION, BaseModel, TimedBaseModel
+from bot.models.base import BaseModel, TimedBaseModel
+from bot.db import db_session
+
+offset = timezone(timedelta(hours=3))
 
 
 class User(TimedBaseModel):
@@ -21,53 +23,47 @@ class User(TimedBaseModel):
 
     @staticmethod
     def update(user_id, username, first_name, last_name):
-        with threading.RLock():
-            user = SESSION.query(User).get(user_id)
+        with db_session() as session:
+            user = session.query(User).get(user_id)
 
             if not user:
                 user = User(id=user_id, username=username,
                             first_name=first_name, last_name=last_name)
-                SESSION.add(user, username)
-                SESSION.flush()
+                session.add(user, username)
             else:
                 user.username = username
                 user.first_name = first_name
                 user.last_name = last_name
 
-            SESSION.commit()
+            session.commit()
 
     @staticmethod
     def get(user_id):
-        try:
-            return SESSION.query(User).get(user_id)
-        finally:
-            SESSION.close()
+        with db_session() as session:
+            return session.query(User).get(user_id)
 
     @staticmethod
     def update_rep_and_force(from_user_id, to_user_id, new_rep, new_force):
-        with threading.RLock():
-            to_user = SESSION.query(User).get(to_user_id)
-            from_user = SESSION.query(User).get(from_user_id)
+        with db_session() as session:
+            to_user = session.query(User).get(to_user_id)
+            from_user = session.query(User).get(from_user_id)
             to_user.reputation = new_rep
             to_user.force = new_force
             from_user.update_reputation_at = db.func.now()
-            SESSION.commit()
+            session.commit()
 
     def is_rep_change_available(self):
-        if self.is_admin:
-            return True
-
+        # if self.is_admin:
+        #     return True
         seconds = (
-            datetime.now() - self.update_reputation_at.replace(tzinfo=None)).total_seconds()
-        minutes = (seconds % 3600) // 60
+            datetime.now(offset) - self.update_reputation_at.replace(tzinfo=offset)).total_seconds()
+        minutes = seconds // 60
         return minutes >= 10
 
     @staticmethod
     def get_by_rating():
-        try:
-            return SESSION.query(User).select_from(User).order_by(User.reputation.desc()).offset(0).limit(10).all()
-        finally:
-            SESSION.close()
+        with db_session() as db:
+            return db.query(User).select_from(User).order_by(User.reputation.desc()).offset(0).limit(10).all()
 
 
 class UserRelatedModel(BaseModel):

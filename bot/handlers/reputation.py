@@ -1,85 +1,16 @@
 import logging
-import math
 from bot import config
-from telegram import ForceReply, Message, ParseMode, Update
-from telegram.utils.helpers import escape_markdown
+from telegram import Message, ParseMode, Update
 from telegram.ext import CallbackContext
 from bot.handlers.users import users_updater
+from bot.models.reputation_update import ReputationUpdate
 from bot.models.user import User
-import sqlalchemy as sa
+from bot.services.auto_delete import auto_delete
+
+
+from bot.services.reputation import compute_force, compute_rep, get_rating
 
 logger = logging.getLogger(__name__)
-
-
-def compute_force(rep, force):
-    i_min_size = 0.1
-    i_max_size = 8
-
-    size_range = i_max_size-i_min_size
-
-    i_min_count = math.log(0+1)
-    i_max_count = math.log(500+1)
-
-    i_count_range = i_max_count-i_min_count
-
-    if i_count_range == 0:
-        i_count_range = 1
-
-    if force > 50 and force < 200:
-        force_new = force / 70
-    elif force >= 200:
-        force_new = force / 10
-    else:
-        force_new = force / 100
-
-    delta = i_min_size + (math.log(force_new + 1) - i_min_count) * \
-        (size_range / i_count_range)
-
-    new_force_delta = rep * delta
-    new_force_delta = 0 if new_force_delta < 0 else new_force_delta
-
-    return new_force_delta
-
-
-def compute_rep(rep, force):
-    i_min_size = 0.5
-    i_max_size = 15
-
-    size_range = i_max_size-i_min_size
-
-    i_min_count = math.log(0+1)
-    i_max_count = math.log(500+1)
-
-    i_count_range = i_max_count-i_min_count
-
-    if i_count_range == 0:
-        i_count_range = 1
-
-    if force > 50 and force < 200:
-        force_new = force / 20
-    elif force >= 200:
-        force_new = force / 10
-    else:
-        force_new = force / 50
-
-    delta = i_min_size+(math.log(force_new+1) - i_min_count) * \
-        (size_range / i_count_range)
-
-    return rep * delta
-
-
-def auto_delete_callback(context: CallbackContext) -> None:
-    context.job.context.delete()
-
-
-def auto_delete(message: Message, context: CallbackContext, from_message=None) -> None:
-    if message.chat.id == config.MIREA_NINJA_GROUP_ID:
-        context.job_queue.run_once(
-            auto_delete_callback, 45, context=message)
-
-        if from_message:
-            context.job_queue.run_once(
-                auto_delete_callback, 45, context=from_message)
 
 
 def reputation_callback(update: Update, context: CallbackContext) -> None:
@@ -99,10 +30,16 @@ def reputation_callback(update: Update, context: CallbackContext) -> None:
 
         if from_user.update_reputation_at:
             if from_user.is_rep_change_available() is False:
-                new_message = context = message.reply_text(
+                new_message = message.reply_text(
                     '❌ Репутацию можно изменять один раз в 10 минут!')
                 auto_delete(new_message, context)
                 return
+
+        if ReputationUpdate.is_user_send_rep_to_message(from_user_id, message.reply_to_message.message_id):
+            new_message = message.reply_text(
+                '❌ Вы уже изменяли репутацию, используя это сообщение!')
+            auto_delete(new_message, context)
+            return
 
         reputation_change = context.reputation[0]['reputation_change']
 
@@ -115,6 +52,9 @@ def reputation_callback(update: Update, context: CallbackContext) -> None:
 
         User.update_rep_and_force(
             from_user_id, to_user_id, new_user_rep, new_user_force)
+
+        ReputationUpdate(message_id=message.reply_to_message.message_id, from_user_id=from_user_id, to_user_id=to_user_id, reputation_delta=new_user_rep_delta,
+                         force_delta=new_user_force_delta, new_reputation=new_user_rep, new_force=new_user_force).create()
 
         from_username = message.from_user.first_name
         to_username = message.reply_to_message.from_user.first_name
@@ -137,28 +77,8 @@ def reputation_callback(update: Update, context: CallbackContext) -> None:
 
 
 def show_leaders_callback(update: Update, context: CallbackContext) -> None:
-    users = User.get_by_rating()
-
-    if len(users) == 0:
-        update.effective_message.reply_text(
-            'На данный момент нет активных участников для формирования рейтинга')
-        return
-
-    medals = {0: '🥇', 1: '🥈', 2: '🥉'}
-
-    lines = []
-    for i in range(len(users)):
-        medal = ''
-        if i in medals:
-            medal = medals[i]
-
-        lines.append(str(i+1) + '. {} - {} репутации и {} влияния {}'.format(
-            users[i].first_name + ' ' +
-            users[i].last_name if users[i].last_name is not None else users[i].first_name,
-            users[i].reputation if users[i].reputation >= 0 else f'({users[i].reputation})', users[i].force, medal))
-
     new_message = update.effective_message.reply_text(
-        '*Рейтинг:*\n' + escape_markdown('\n'.join(lines)), parse_mode=ParseMode.MARKDOWN)
+        get_rating(User.get_by_rating()), parse_mode=ParseMode.MARKDOWN)
 
     auto_delete(new_message, context, from_message=update.effective_message)
 

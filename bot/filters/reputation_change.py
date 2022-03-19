@@ -16,11 +16,12 @@ class ReputationChangeFilter(MessageFilter):
         if message.chat.id == config.MIREA_NINJA_GROUP_ID:
             if message.reply_to_message:
                 if message.reply_to_message.from_user.id != message.from_user.id:
-                    text = message.text.rstrip(
-                        string.punctuation).strip().lower()
-                    if re.match(self.regex_upvote, text):
-                        return {'reputation': [{'reputation_change': 1}]}
-                    elif re.match(self.regex_downvote, text):
-                        return {'reputation': [{'reputation_change': -1}]}
+                    if message.text:
+                        text = message.text.rstrip(
+                            string.punctuation).strip().lower()
+                        if re.match(self.regex_upvote, text):
+                            return {'reputation': [{'reputation_change': 1}]}
+                        elif re.match(self.regex_downvote, text):
+                            return {'reputation': [{'reputation_change': -1}]}
 
         return {}

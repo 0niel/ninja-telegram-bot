@@ -9,6 +9,7 @@ def setup(dispatcher: Dispatcher):
     logger.info("Setup handlers...")
 
     from bot.handlers.reputation import reputation_callback, show_leaders_callback, show_self_rating_callback, about_rating_callback
+    from bot.handlers.rules import rules_callback
     from bot.handlers.users import users_updater
     from bot.filters.reputation_change import ReputationChangeFilter
 
@@ -29,4 +30,8 @@ def setup(dispatcher: Dispatcher):
         'me', show_self_rating_callback, run_async=True), group=3)
 
     # show about information
-    dispatcher.add_handler(CommandHandler('about', about_rating_callback), group=4)
+    dispatcher.add_handler(CommandHandler(
+        'about', about_rating_callback), group=4)
+
+    # show chat rules
+    dispatcher.add_handler(CommandHandler('rules', rules_callback), group=5)
