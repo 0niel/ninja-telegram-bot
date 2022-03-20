@@ -1,4 +1,3 @@
-from distutils.command.config import config
 import re
 import string
 from telegram.ext import MessageFilter
