@@ -49,7 +49,7 @@ class User(TimedBaseModel):
             from_user = session.query(User).get(from_user_id)
             to_user.reputation = new_rep
             to_user.force = new_force
-            from_user.update_reputation_at = db.func.now(offset)
+            from_user.update_reputation_at = datetime.datetime.now(offset)
             session.commit()
             
     @staticmethod
