@@ -33,7 +33,7 @@ def daily_job(context):
 
         User.update_force(user.id, user.force + new_force)
 
-        text += f'*{top_by_messages[i].messages}* сообщений от {chat_member.first_name}, _\+{escape_markdown(str(new_force), version=2)} влияния_'
+        text += f'*{top_by_messages[i].messages}* сообщений от {chat_member.first_name}, _\+{escape_markdown(str(new_force), version=2)} влияния_\n'
 
     context.bot.send_message(
         chat_id=config.MIREA_NINJA_GROUP_ID, text=text, parse_mode=ParseMode.MARKDOWN_V2)
