@@ -41,7 +41,7 @@ def daily_job(context):
 
 def setup(job_queue: JobQueue):
     """Setup daily notification job"""
-    t = datetime.time(23, 00, 00, 000000, tzinfo=pytz.timezone(
+    t = datetime.time(23, 59, 00, 000000, tzinfo=pytz.timezone(
         'Europe/Moscow'))
 
     job_queue.run_daily(daily_job, t)
