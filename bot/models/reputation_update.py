@@ -21,7 +21,7 @@ class ReputationUpdate(BaseModel):
     new_reputation = db.Column(db.FLOAT)
     new_force = db.Column(db.FLOAT)
     updated_at = db.Column(db.DateTime(
-        True), default=datetime.datetime.now(offset).date())
+        True), default=datetime.datetime.now(offset))
 
     def create(self):
         with db_session() as db:
