@@ -74,8 +74,7 @@ def get_rating(users: List[User]) -> str:
             medal = medals[i]
 
         lines.append(str(i+1) + '. {} - {} репутации и {} влияния {}'.format(
-            users[i].first_name + ' ' +
-            users[i].last_name if users[i].last_name is not None else '',
+            users[i].first_name + ' ' + (users[i].last_name if users[i].last_name is not None else ''),
             users[i].reputation if users[i].reputation >= 0 else f'({users[i].reputation})', users[i].force, medal))
 
     return '*Рейтинг:*\n' + escape_markdown('\n'.join(lines))
