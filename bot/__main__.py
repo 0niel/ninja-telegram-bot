@@ -2,6 +2,8 @@ import logging
 from pathlib import Path
 from telegram.ext import Updater
 
+import bot.services.daily_job as daily_job
+
 from . import config
 
 # Enable logging
@@ -26,6 +28,9 @@ def main() -> None:
 
     # Setup command and message handlers
     handlers.setup(dispatcher)
+
+    # Setup daily notification job
+    daily_job.setup(updater.job_queue)
 
     # Start the Bot
     updater.start_polling()

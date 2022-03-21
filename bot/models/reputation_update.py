@@ -6,6 +6,9 @@ from bot.models.base import BaseModel
 from bot.db import db_session
 
 
+offset = datetime.timezone(datetime.timedelta(hours=3))
+
+
 class ReputationUpdate(BaseModel):
     __tablename__ = "reputation_updates"
 
@@ -18,7 +21,7 @@ class ReputationUpdate(BaseModel):
     new_reputation = db.Column(db.FLOAT)
     new_force = db.Column(db.FLOAT)
     updated_at = db.Column(db.DateTime(
-        True), default=datetime.datetime.utcnow, server_default=db.func.now())
+        True), default=datetime.datetime.now(offset).date())
 
     def create(self):
         with db_session() as db:

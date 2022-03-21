@@ -4,3 +4,4 @@ pydantic
 requests
 python-telegram-bot
 psycopg2-binary
+pytz

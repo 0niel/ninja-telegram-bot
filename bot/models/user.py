@@ -49,7 +49,14 @@ class User(TimedBaseModel):
             from_user = session.query(User).get(from_user_id)
             to_user.reputation = new_rep
             to_user.force = new_force
-            from_user.update_reputation_at = db.func.now()
+            from_user.update_reputation_at = db.func.now(offset)
+            session.commit()
+            
+    @staticmethod
+    def update_force(user_id, new_force):
+        with db_session() as session:
+            user = session.query(User).get(user_id)
+            user.force = new_force
             session.commit()
 
     def is_rep_change_available(self):
