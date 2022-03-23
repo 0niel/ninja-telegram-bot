@@ -6,3 +6,6 @@ python-telegram-bot
 psycopg2-binary
 pytz
 grpcio-tools
+protobuf
+gcloud
+google-api-python-client
