@@ -1,3 +1,4 @@
+from bot.handlers.voice_to_text import voice_to_text_callback
 import logging
 from telegram.ext import Dispatcher, MessageHandler, Filters, CommandHandler
 
@@ -20,6 +21,10 @@ def setup(dispatcher: Dispatcher):
     # on non command i.e message
     dispatcher.add_handler(MessageHandler(
         ReputationChangeFilter(), reputation_callback, run_async=True), group=1)
+
+    # on non command i.e message
+    dispatcher.add_handler(MessageHandler(
+        Filters.voice & Filters.chat_type.groups, voice_to_text_callback), group=6)
 
     # show reputation rating table
     dispatcher.add_handler(CommandHandler(
