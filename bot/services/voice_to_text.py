@@ -33,7 +33,7 @@ def gen(folder_id, audio_file_name):
             data = f.read(CHUNK_SIZE)
 
 
-def run(audio_file_name, folder_id=config.YANDEX_FOLDER_ID, iam_token=config.YANDEX_IAM_TOKEN):
+def run(audio_file_name, folder_id=config.YANDEX_FOLDER_ID, api_key=config.YANDEX_API_KEY):
     # Establish a connection with the server
     cred = grpc.ssl_channel_credentials()
     channel = grpc.secure_channel('stt.api.cloud.yandex.net:443', cred)
@@ -41,7 +41,7 @@ def run(audio_file_name, folder_id=config.YANDEX_FOLDER_ID, iam_token=config.YAN
 
     # Send data for recognition
     it = stub.StreamingRecognize(gen(folder_id, audio_file_name), metadata=(
-        ('authorization', 'Bearer %s' % iam_token),))
+        ('authorization', 'Api-Key %s' % api_key),))
 
 
     # Process server responses and output the result to the console.
