@@ -93,15 +93,20 @@ def show_self_rating_callback(update: Update, context: CallbackContext) -> None:
 
 
 def about_user_callback(update: Update, context: CallbackContext) -> None:
-    username = context.args[0].replace('@', '').strip()
-    user = User.get_by_username(username)
+    msg = update.effective_message
+    
+    if msg.reply_to_message:
+        from_user_id = msg.reply_to_message.from_user.id
+        user = User.get(from_user_id)
+    else:
+        username = context.args[0].replace('@', '').strip()
+        user = User.get_by_username(username)
 
     if user:
         new_message = update.effective_message.reply_text(
             'Пользователь {} имеет {} рейтинга и {} очков влияния'.format(user.first_name, user.reputation, user.force))
     else:
         new_message = update.effective_message.reply_text(
-            'Пользователь ещё не получал рейтинга')
+            'Пользователь {} имеет 0.0 рейтинга и 0.0 очков влияния'.format(user.first_name))
 
-    auto_delete(new_message, context,
-                from_message=update.effective_message)
+    auto_delete(new_message, context, from_message=msg)
