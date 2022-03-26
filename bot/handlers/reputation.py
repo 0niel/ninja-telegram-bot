@@ -105,7 +105,7 @@ def about_user_callback(update: Update, context: CallbackContext) -> None:
     else:
         new_message = msg.reply_text(
             '❌ Вы должны ответить на сообщение пользователя или упомянуть его!')
-        auto_delete(new_message, context)
+        auto_delete(new_message, context, from_message=msg)
         return
 
     if user:
