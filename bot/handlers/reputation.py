@@ -78,7 +78,7 @@ def reputation_callback(update: Update, context: CallbackContext) -> None:
 
 def show_leaders_callback(update: Update, context: CallbackContext) -> None:
     new_message = update.effective_message.reply_text(
-        get_rating(User.get_by_rating()), parse_mode=ParseMode.MARKDOWN)
+        get_rating(User.get_by_rating(15)), parse_mode=ParseMode.MARKDOWN)
 
     auto_delete(new_message, context, from_message=update.effective_message)
 
@@ -92,8 +92,16 @@ def show_self_rating_callback(update: Update, context: CallbackContext) -> None:
     auto_delete(new_message, context, from_message=update.effective_message)
 
 
-def about_rating_callback(update: Update, context: CallbackContext) -> None:
-    new_message = update.effective_message.reply_text(
-        '*Репутация* - это основной показатель вашего рейтинга. Чем выше репутация, тем больше вклада вы внесли в общение в беседе Mirea Ninja.\n\n*Влияние* - это показатель того, насколько ваш голос силен. Сила набирается вслед за репутацией, но не снижается вместе с ней.', parse_mode=ParseMode.MARKDOWN)
+def about_user_callback(update: Update, context: CallbackContext) -> None:
+    username = context.args[0].replace('@', '').strip()
+    user = User.get_by_username(username)
 
-    auto_delete(new_message, context, from_message=update.effective_message)
+    if user:
+        new_message = update.effective_message.reply_text(
+            'Пользователь {} имеет {} рейтинга и {} очков влияния'.format(user.first_name, user.reputation, user.force))
+    else:
+        new_message = update.effective_message.reply_text(
+            'Пользователь ещё не получал рейтинга')
+
+    auto_delete(new_message, context,
+                from_message=update.effective_message)

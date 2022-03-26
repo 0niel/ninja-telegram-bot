@@ -41,6 +41,11 @@ class User(TimedBaseModel):
     def get(user_id):
         with db_session() as session:
             return session.query(User).get(user_id)
+        
+    @staticmethod
+    def get_by_username(username):
+        with db_session() as session:
+            return session.query(User).filter(User.username == username).first()
 
     @staticmethod
     def update_rep_and_force(from_user_id, to_user_id, new_rep, new_force):
@@ -68,9 +73,9 @@ class User(TimedBaseModel):
         return minutes >= 10
 
     @staticmethod
-    def get_by_rating():
+    def get_by_rating(limit: int):
         with db_session() as db:
-            return db.query(User).select_from(User).order_by(User.reputation.desc()).offset(0).limit(10).all()
+            return db.query(User).select_from(User).order_by(User.reputation.desc()).offset(0).limit(limit).all()
 
 
 class UserRelatedModel(BaseModel):
