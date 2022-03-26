@@ -2,6 +2,7 @@ import logging
 from bot import config
 from telegram import Message, ParseMode, Update
 from telegram.ext import CallbackContext
+from bot.filters.has_user_in_args import HasUserInArgsFilter
 from bot.handlers.users import users_updater
 from bot.models.reputation_update import ReputationUpdate
 from bot.models.user import User
@@ -94,13 +95,18 @@ def show_self_rating_callback(update: Update, context: CallbackContext) -> None:
 
 def about_user_callback(update: Update, context: CallbackContext) -> None:
     msg = update.effective_message
-    
+
     if msg.reply_to_message:
         from_user_id = msg.reply_to_message.from_user.id
         user = User.get(from_user_id)
-    else:
+    elif HasUserInArgsFilter().filter(msg):
         username = context.args[0].replace('@', '').strip()
         user = User.get_by_username(username)
+    else:
+        new_message = msg.reply_text(
+            '❌ Вы должны ответить на сообщение пользователя или упомянуть его!')
+        auto_delete(new_message, context)
+        return
 
     if user:
         new_message = update.effective_message.reply_text(

@@ -14,8 +14,6 @@ def setup(dispatcher: Dispatcher):
     from bot.handlers.help import help_callback
     from bot.handlers.voice_to_text import voice_to_text_callback
     from bot.filters.reputation_change import ReputationChangeFilter
-    from bot.filters.has_user_in_args import HasUserInArgsFilter
-    from bot.filters.is_user_reply_to_user import IsUserReplyToUser
 
     # update user data
     dispatcher.add_handler(MessageHandler(
@@ -30,7 +28,7 @@ def setup(dispatcher: Dispatcher):
         Filters.voice & Filters.chat_type.groups, voice_to_text_callback), group=6)
 
     dispatcher.add_handler(CommandHandler(
-        'about', about_user_callback,  HasUserInArgsFilter() | IsUserReplyToUser(), run_async=True), group=7)
+        'about', about_user_callback, run_async=True), group=7)
 
     # show reputation rating table
     dispatcher.add_handler(CommandHandler(
