@@ -188,3 +188,5 @@ def reputation_history_page_callback(update: Update, context: CallbackContext) -
             len(logs_data), current_page=page, data_pattern='logs#{page}#' + str(user_id))
         query.edit_message_text(
             text=logs_data[page - 1], reply_markup=paginator.markup, parse_mode=ParseMode.HTML)
+    else:
+        query.answer("Вы не можете пользоваться данной клавиатурой")
