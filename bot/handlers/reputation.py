@@ -1,6 +1,6 @@
 import logging
-from bot import config
-from telegram import Message, ParseMode, Update
+from telegram import ParseMode, Update
+from telegram.utils.helpers import escape_markdown
 from telegram.ext import CallbackContext
 from bot.filters.has_user_in_args import HasUserInArgsFilter
 from bot.handlers.users import users_updater
@@ -114,5 +114,46 @@ def about_user_callback(update: Update, context: CallbackContext) -> None:
     else:
         new_message = update.effective_message.reply_text(
             'Пользователь {} имеет 0.0 рейтинга и 0.0 очков влияния'.format(user.first_name))
+
+    auto_delete(new_message, context, from_message=msg)
+
+
+def reputation_history_callback(update: Update, context: CallbackContext) -> None:
+    msg = update.effective_message
+
+    history = ReputationUpdate.get_history(msg.from_user.id)
+
+    text = ''
+
+    if history:
+        for i in range(len(history)):
+            from_user = User.get(history[i].from_user_id)
+            updated_at = str(history[i].updated_at).split('.')[0]
+            updated_at_date = escape_markdown(updated_at.split()[0], version=2)
+            updated_at_time = escape_markdown(updated_at.split()[1], version=2)
+
+            # round it up so as not to show too large numbers
+            history[i].reputation_delta = round(history[i].reputation_delta, 3)
+            history[i].force_delta = round(history[i].force_delta, 3)
+
+            new_rep = escape_markdown('+' +
+                                      str(history[i].reputation_delta) if history[i].reputation_delta > 0 else str(
+                                          history[i].reputation_delta), version=2)
+
+            new_force = escape_markdown('+' +
+                                        str(history[i].force_delta) if history[i].force_delta > 0 else str(
+                                            history[i].force_delta), version=2)
+
+            new_rep = escape_markdown(
+                str(history[i].new_reputation), version=2)
+
+            index = str(i + 1)
+
+            text += f'{index}\. *{from_user.first_name}* изменил\(а\) репутацию {updated_at_date} в {updated_at_time} \({new_rep}; {new_force}\)\. Новая репутация: _{new_rep}_\n'
+
+        new_message = msg.reply_text(text, parse_mode=ParseMode.MARKDOWN_V2)
+    else:
+        new_message = msg.reply_text(
+            '❌ У вас ещё нет истории изменения репутации.')
 
     auto_delete(new_message, context, from_message=msg)

@@ -36,5 +36,11 @@ class ReputationUpdate(BaseModel):
 
             return send is not None
 
+    @staticmethod
+    def get_history(user_id):
+        with db_session() as session:
+            return session.query(ReputationUpdate).filter(
+                ReputationUpdate.to_user_id == user_id).order_by(ReputationUpdate.updated_at.desc()).all()
+
 
 ReputationUpdate.__table__.create(checkfirst=True)
