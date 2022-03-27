@@ -149,7 +149,7 @@ def get_logs_data(user_id):
                 logs_text += f'{index}. <b>{from_user.first_name}</b> изменил(а) репутацию {updated_at_date} в {updated_at_time} ({new_rep}; {new_force}). Новая репутация: <i>{new_rep}</i>\n\n'
             else:
                 logs_data.append(logs_text)
-                logs_text = ''
+                logs_text = f'{index}. <b>{from_user.first_name}</b> изменил(а) репутацию {updated_at_date} в {updated_at_time} ({new_rep}; {new_force}). Новая репутация: <i>{new_rep}</i>\n\n'
 
         if logs_text != '':
             logs_data.append(logs_text)
