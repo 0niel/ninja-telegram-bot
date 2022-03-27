@@ -9,3 +9,4 @@ grpcio-tools
 protobuf
 gcloud
 google-api-python-client
+python-telegram-bot-pagination
