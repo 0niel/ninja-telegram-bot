@@ -169,7 +169,7 @@ def reputation_history_callback(update: Update, context: CallbackContext) -> Non
     auto_delete(new_message, context, from_message=msg)
 
 
-def reputation_history_callback(update: Update, context: CallbackContext) -> None:
+def reputation_history_page_callback(update: Update, context: CallbackContext) -> None:
     query = update.callback_query
     query.answer()
     page = int(query.data.split('#')[1])
