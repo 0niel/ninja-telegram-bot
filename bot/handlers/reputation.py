@@ -2,17 +2,17 @@ import logging
 from telegram import ParseMode, Update
 from telegram.utils.helpers import escape_markdown
 from telegram.ext import CallbackContext
+from telegram_bot_pagination import InlineKeyboardPaginator
+
 from bot.filters.has_user_in_args import HasUserInArgsFilter
 from bot.handlers.users import users_updater
 from bot.models.reputation_update import ReputationUpdate
 from bot.models.user import User
 from bot.services.auto_delete import auto_delete
-
-
 from bot.services.reputation import compute_force, compute_rep, get_rating
 
 logger = logging.getLogger(__name__)
-
+logs_data = []
 
 def reputation_callback(update: Update, context: CallbackContext) -> None:
     if context.reputation:
@@ -123,7 +123,8 @@ def reputation_history_callback(update: Update, context: CallbackContext) -> Non
 
     history = ReputationUpdate.get_history(msg.from_user.id)
 
-    text = ''
+    logs_data = []
+    logs_text = ''
 
     if history:
         for i in range(len(history)):
@@ -149,11 +150,30 @@ def reputation_history_callback(update: Update, context: CallbackContext) -> Non
 
             index = str(i + 1)
 
-            text += f'{index}\. *{from_user.first_name}* изменил\(а\) репутацию {updated_at_date} в {updated_at_time} \({new_rep}; {new_force}\)\. Новая репутация: _{new_rep}_\n'
+            if i % 10 is not 0 or i is 0:
+                logs_text += f'{index}\. *{from_user.first_name}* изменил\(а\) репутацию {updated_at_date} в {updated_at_time} \({new_rep}; {new_force}\)\. Новая репутация: _{new_rep}_\n'
+            else:
+                logs_data.append(logs_text)
+                logs_text = ''
+        
+        if logs_text is not '':
+            logs_data.append(logs_text)
 
-        new_message = msg.reply_text(text, parse_mode=ParseMode.MARKDOWN_V2)
+        paginator = InlineKeyboardPaginator(len(logs_data), data_pattern='logs#{page}')
+        new_message = msg.reply_html(text=logs_data[0], reply_markup=paginator.markup, parse_mode=ParseMode.MARKDOWN_V2)
+
     else:
         new_message = msg.reply_text(
             '❌ У вас ещё нет истории изменения репутации.')
 
     auto_delete(new_message, context, from_message=msg)
+
+
+def reputation_history_callback(update: Update, context: CallbackContext) -> None:
+    query = update.callback_query
+    query.answer()
+    page = int(query.data.split('#')[1])
+    paginator = InlineKeyboardPaginator(
+        len(logs_data), current_page=page, data_pattern='logs#{page}')
+    query.edit_message_text(
+        text=logs_data[page - 1], reply_markup=paginator.markup)
