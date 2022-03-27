@@ -12,7 +12,7 @@ from bot.services.auto_delete import auto_delete
 from bot.services.reputation import compute_force, compute_rep, get_rating
 
 logger = logging.getLogger(__name__)
-logs_data = []
+
 
 def reputation_callback(update: Update, context: CallbackContext) -> None:
     if context.reputation:
@@ -118,10 +118,8 @@ def about_user_callback(update: Update, context: CallbackContext) -> None:
     auto_delete(new_message, context, from_message=msg)
 
 
-def reputation_history_callback(update: Update, context: CallbackContext) -> None:
-    msg = update.effective_message
-
-    history = ReputationUpdate.get_history(msg.from_user.id)
+def get_logs_data(user_id):
+    history = ReputationUpdate.get_history(user_id)
 
     logs_data = []
     logs_text = ''
@@ -130,37 +128,46 @@ def reputation_history_callback(update: Update, context: CallbackContext) -> Non
         for i in range(len(history)):
             from_user = User.get(history[i].from_user_id)
             updated_at = str(history[i].updated_at).split('.')[0]
-            updated_at_date = escape_markdown(updated_at.split()[0], version=2)
-            updated_at_time = escape_markdown(updated_at.split()[1], version=2)
+            updated_at_date = updated_at.split()[0]
+            updated_at_time = updated_at.split()[1]
 
             # round it up so as not to show too large numbers
             history[i].reputation_delta = round(history[i].reputation_delta, 3)
             history[i].force_delta = round(history[i].force_delta, 3)
 
-            new_rep = escape_markdown('+' +
-                                      str(history[i].reputation_delta) if history[i].reputation_delta > 0 else str(
-                                          history[i].reputation_delta), version=2)
+            new_rep = '+' + str(history[i].reputation_delta) if history[i].reputation_delta > 0 else str(
+                history[i].reputation_delta)
 
-            new_force = escape_markdown('+' +
-                                        str(history[i].force_delta) if history[i].force_delta > 0 else str(
-                                            history[i].force_delta), version=2)
+            new_force = '+' + str(history[i].force_delta) if history[i].force_delta > 0 else str(
+                history[i].force_delta)
 
-            new_rep = escape_markdown(
-                str(history[i].new_reputation), version=2)
+            new_rep = str(history[i].new_reputation)
 
             index = str(i + 1)
 
-            if i % 10 is not 0 or i is 0:
-                logs_text += f'{index}\. *{from_user.first_name}* изменил\(а\) репутацию {updated_at_date} в {updated_at_time} \({new_rep}; {new_force}\)\. Новая репутация: _{new_rep}_\n'
+            if i % 10 != 0 or i == 0:
+                logs_text += f'{index}. <b>{from_user.first_name}</b> изменил(а) репутацию {updated_at_date} в {updated_at_time} ({new_rep}; {new_force}). Новая репутация: <i>{new_rep}</i>\n\n'
             else:
                 logs_data.append(logs_text)
                 logs_text = ''
-        
-        if logs_text is not '':
+
+        if logs_text != '':
             logs_data.append(logs_text)
 
-        paginator = InlineKeyboardPaginator(len(logs_data), data_pattern='logs#{page}')
-        new_message = msg.reply_html(text=logs_data[0], reply_markup=paginator.markup, parse_mode=ParseMode.MARKDOWN_V2)
+    return logs_data
+
+
+def reputation_history_callback(update: Update, context: CallbackContext) -> None:
+    msg = update.effective_message
+
+    logs_data = get_logs_data(msg.from_user.id)
+
+    if len(logs_data) > 0:
+        paginator = InlineKeyboardPaginator(
+            len(logs_data), data_pattern='logs#{page}#' + str(msg.from_user.id))
+
+        new_message = msg.reply_html(
+            text=logs_data[0], reply_markup=paginator.markup)
 
     else:
         new_message = msg.reply_text(
@@ -171,9 +178,13 @@ def reputation_history_callback(update: Update, context: CallbackContext) -> Non
 
 def reputation_history_page_callback(update: Update, context: CallbackContext) -> None:
     query = update.callback_query
+    user_id = int(query.data.split('#')[2])
     query.answer()
     page = int(query.data.split('#')[1])
-    paginator = InlineKeyboardPaginator(
-        len(logs_data), current_page=page, data_pattern='logs#{page}')
-    query.edit_message_text(
-        text=logs_data[page - 1], reply_markup=paginator.markup)
+    if update.callback_query.from_user.id == user_id:
+        logs_data = get_logs_data(update.callback_query.from_user.id)
+
+        paginator = InlineKeyboardPaginator(
+            len(logs_data), current_page=page, data_pattern='logs#{page}#' + str(user_id))
+        query.edit_message_text(
+            text=logs_data[page - 1], reply_markup=paginator.markup, parse_mode=ParseMode.HTML)
