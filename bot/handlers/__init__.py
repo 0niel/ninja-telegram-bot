@@ -1,7 +1,6 @@
 import logging
 from telegram.ext import Dispatcher, MessageHandler, Filters, CommandHandler, CallbackQueryHandler
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -9,7 +8,8 @@ def setup(dispatcher: Dispatcher):
     logger.info("Setup handlers...")
 
     from bot.handlers.reputation import reputation_callback, show_leaders_callback, \
-        show_self_rating_callback, about_user_callback, reputation_history_callback, reputation_history_page_callback
+        show_self_rating_callback, about_user_callback, reputation_history_callback, \
+            reputation_history_page_callback, show_self_rating_position_callback
     from bot.handlers.rules import rules_callback
     from bot.handlers.users import users_updater
     from bot.handlers.help import help_callback
@@ -34,7 +34,11 @@ def setup(dispatcher: Dispatcher):
 
     dispatcher.add_handler(CommandHandler(
         'history', reputation_history_callback, run_async=True), group=8)
-    dispatcher.add_handler(CallbackQueryHandler(reputation_history_page_callback, pattern='^logs#'))
+
+    # called by the keyboard when viewing the reputation history
+    dispatcher.add_handler(CallbackQueryHandler(
+        reputation_history_page_callback, pattern='^logs#'))
+
     # show about information
     dispatcher.add_handler(CommandHandler(
         'help', help_callback), group=4)
@@ -46,6 +50,9 @@ def setup(dispatcher: Dispatcher):
     # show self rating
     dispatcher.add_handler(CommandHandler(
         'me', show_self_rating_callback, run_async=True), group=3)
+    
+    dispatcher.add_handler(CallbackQueryHandler(
+        show_self_rating_position_callback, pattern='^show_pos#'))
 
     # show brief information about the bot
     dispatcher.add_handler(CommandHandler(

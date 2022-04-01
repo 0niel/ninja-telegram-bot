@@ -1,5 +1,5 @@
 import logging
-from telegram import ParseMode, Update
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ParseMode, Update
 from telegram.utils.helpers import escape_markdown
 from telegram.ext import CallbackContext
 from telegram_bot_pagination import InlineKeyboardPaginator
@@ -9,7 +9,7 @@ from bot.handlers.users import users_updater
 from bot.models.reputation_update import ReputationUpdate
 from bot.models.user import User
 from bot.services.auto_delete import auto_delete
-from bot.services.reputation import compute_force, compute_rep, get_rating
+from bot.services.reputation import compute_force, compute_rep, get_rating, get_rating_by_slice
 
 logger = logging.getLogger(__name__)
 
@@ -85,12 +85,36 @@ def show_leaders_callback(update: Update, context: CallbackContext) -> None:
 
 
 def show_self_rating_callback(update: Update, context: CallbackContext) -> None:
-    user = User.get(update.effective_message.from_user.id)
+    user_id = update.effective_message.from_user.id
+    user = User.get(user_id)
 
-    new_message = update.effective_message.reply_text(update.effective_message.from_user.first_name +
-                                                      ', у вас {} рейтинга и {} очков влияния'.format(user.reputation, user.force))
+    keyboard = [
+        [InlineKeyboardButton("Показать позицию в рейтинге",
+                              callback_data=f'show_pos#{str(user_id)}')],
+    ]
+
+    new_message = update.effective_message.reply_text('{}, у вас {} рейтинга и {} очков влияния'.format(
+        update.effective_message.from_user.first_name, user.reputation, user.force), reply_markup=InlineKeyboardMarkup(keyboard))
 
     auto_delete(new_message, context, from_message=update.effective_message)
+
+
+def show_self_rating_position_callback(update: Update, context: CallbackContext) -> None:
+    query = update.callback_query
+    user_id = int(query.data.split('#')[1])
+    if update.callback_query.from_user.id == user_id:
+        rating_slice = User.get_rating_slice(user_id, 5, 5)
+        
+        if rating_slice:
+            text = get_rating_by_slice(rating_slice, user_id)
+            query.edit_message_text(
+                text=text, parse_mode=ParseMode.MARKDOWN)
+            query.answer()
+        else:
+            query.answer("Для вас ещё не сформировалась позиция в рейтинге")
+    else:
+        query.answer("Вы не можете пользоваться данной клавиатурой")
+
 
 
 def about_user_callback(update: Update, context: CallbackContext) -> None:

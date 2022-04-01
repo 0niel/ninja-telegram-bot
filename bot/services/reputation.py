@@ -74,7 +74,30 @@ def get_rating(users: List[User]) -> str:
             medal = medals[i]
 
         lines.append(str(i+1) + '. {} - {} репутации и {} влияния {}'.format(
-            users[i].first_name + ' ' + (users[i].last_name if users[i].last_name is not None else ''),
+            users[i].first_name + ' ' +
+            (users[i].last_name if users[i].last_name is not None else ''),
             users[i].reputation if users[i].reputation >= 0 else f'({users[i].reputation})', users[i].force, medal))
 
-    return '*Рейтинг:*\n' + escape_markdown('\n'.join(lines))
+    return '*Рейтинг:*\n\n' + escape_markdown('\n'.join(lines))
+
+
+def get_rating_by_slice(users_slice, user_id) -> str:
+    lines = []
+
+    if users_slice[0][1] != 1:
+        lines.append('**. . .**')
+
+    for user in users_slice:
+        line = escape_markdown(str(user[1]) + '. {} - {} репутации и {} влияния'.format(
+            user[0].first_name + ' ' +
+            (user[0].last_name if user[0].last_name is not None else ''),
+            user[0].reputation if user[0].reputation >= 0 else f'({user[0].reputation})', user[0].force))
+
+        if user[0].id == user_id:
+            line = f'*{line}*'
+
+        lines.append(line)
+
+    lines.append('**. . .**')
+
+    return '*Вы в рейтинге:*\n\n' + '\n'.join(lines)

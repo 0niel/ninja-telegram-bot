@@ -1,5 +1,6 @@
 from __future__ import annotations
 import sqlalchemy as db
+from sqlalchemy import func
 from datetime import datetime, timezone, timedelta
 from sqlalchemy.sql import expression
 
@@ -41,7 +42,7 @@ class User(TimedBaseModel):
     def get(user_id):
         with db_session() as session:
             return session.query(User).get(user_id)
-        
+
     @staticmethod
     def get_by_username(username):
         with db_session() as session:
@@ -56,7 +57,7 @@ class User(TimedBaseModel):
             to_user.force = new_force
             from_user.update_reputation_at = datetime.now(offset)
             session.commit()
-            
+
     @staticmethod
     def update_force(user_id, new_force):
         with db_session() as session:
@@ -74,8 +75,39 @@ class User(TimedBaseModel):
 
     @staticmethod
     def get_by_rating(limit: int):
-        with db_session() as db:
-            return db.query(User).select_from(User).order_by(User.reputation.desc()).offset(0).limit(limit).all()
+        with db_session() as session:
+            return session.query(User).select_from(User).order_by(User.reputation.desc()).offset(0).limit(limit).all()
+
+    @staticmethod
+    def get_rating_slice(user_id, before_count: int, after_count: int):
+        with db_session() as session:
+            user = session.query(User).get(user_id)
+
+            if user:
+                query = session.query(
+                    User,
+                    func.rank()
+                        .over(
+                            order_by=User.reputation.desc()
+                    )
+                    .label('rank')
+                )
+
+                users = query.filter(User.force != 0).all()
+                
+                for tmp_user in users:
+                    if tmp_user[0].id == user_id:
+                        if tmp_user[1] - 1 - before_count >= 0:
+                            start = tmp_user[1] - 1 - before_count
+                        else:
+                            start = 0
+                        
+                        if tmp_user[1] - 1 + after_count < len(users):
+                            end = tmp_user[1] - 1 + after_count
+                        else:
+                            end = len(users) - 1
+                            
+                        return users[start:end]
 
 
 class UserRelatedModel(BaseModel):
