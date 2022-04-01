@@ -44,9 +44,10 @@ def reputation_callback(update: Update, context: CallbackContext) -> None:
 
         reputation_change = context.reputation[0]['reputation_change']
 
-        new_user_rep_delta = compute_rep(reputation_change, from_user.force)
-        new_user_force_delta = compute_force(
-            reputation_change, from_user.force)
+        new_user_rep_delta = round(compute_rep(
+            reputation_change, from_user.force), 5)
+        new_user_force_delta = round(compute_force(
+            reputation_change, from_user.force), 5)
 
         new_user_force = round(to_user.force + new_user_force_delta, 3)
         new_user_rep = round(to_user.reputation + new_user_rep_delta, 3)
@@ -104,7 +105,7 @@ def show_self_rating_position_callback(update: Update, context: CallbackContext)
     user_id = int(query.data.split('#')[1])
     if update.callback_query.from_user.id == user_id:
         rating_slice = User.get_rating_slice(user_id, 5, 5)
-        
+
         if rating_slice:
             text = get_rating_by_slice(rating_slice, user_id)
             query.edit_message_text(
@@ -114,7 +115,6 @@ def show_self_rating_position_callback(update: Update, context: CallbackContext)
             query.answer("Для вас ещё не сформировалась позиция в рейтинге")
     else:
         query.answer("Вы не можете пользоваться данной клавиатурой")
-
 
 
 def about_user_callback(update: Update, context: CallbackContext) -> None:
