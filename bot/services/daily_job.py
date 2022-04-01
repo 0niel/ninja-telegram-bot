@@ -34,7 +34,7 @@ def daily_job(context):
 
         User.update_force(user.id, user.force + new_force)
 
-        suffix = ["собщение", "сообщения", "собщений"][get_plural_forms(2)]
+        suffix = ["собщение", "сообщения", "собщений"][get_plural_forms(top_by_messages[i].messages)]
 
         text += f'*{top_by_messages[i].messages}* {suffix} от {chat_member.first_name}, _\+{escape_markdown(str(new_force), version=2)} влияния_\n'
 
