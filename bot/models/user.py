@@ -102,7 +102,7 @@ class User(TimedBaseModel):
                         else:
                             start = 0
                         
-                        if tmp_user[1] - 1 + after_count < len(users):
+                        if tmp_user[1] + after_count < len(users):
                             end = tmp_user[1] + after_count
                         else:
                             end = len(users)
