@@ -1,10 +1,10 @@
 import logging
+
 from telegram import ParseMode, Update
 from telegram.ext import CallbackContext
 from telegram.utils.helpers import escape_markdown
 
 from bot.services.auto_delete import auto_delete
-
 
 RULES_TEXT = (
     'Чат является важным средством коммуникации, но при чрезмерном использовании он '

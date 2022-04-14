@@ -1,5 +1,7 @@
 import datetime
-from sqlalchemy import DateTime, Column, func
+
+from sqlalchemy import Column, DateTime, func
+
 from bot import db
 
 

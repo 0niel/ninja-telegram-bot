@@ -1,6 +1,8 @@
 import math
 from typing import List
+
 from telegram.utils.helpers import escape_markdown
+
 from bot.models.user import User
 
 

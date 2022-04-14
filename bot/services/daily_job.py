@@ -1,13 +1,14 @@
 import datetime
+
 import pytz
 from telegram import ParseMode
 from telegram.ext import JobQueue
 from telegram.utils.helpers import escape_markdown
+
 from bot import config
 from bot.models.messages_history import MessagesHistory
 from bot.models.user import User
 from bot.utils.plural_forms import get_plural_forms
-
 
 offset = datetime.timezone(datetime.timedelta(hours=3))
 

@@ -1,9 +1,10 @@
-import logging
 import datetime
+import logging
+
 from telegram import Update
 from telegram.ext import CallbackContext
-from bot.models.messages_history import MessagesHistory
 
+from bot.models.messages_history import MessagesHistory
 from bot.models.user import User
 
 

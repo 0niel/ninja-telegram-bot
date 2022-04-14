@@ -7,13 +7,14 @@ from google.protobuf import descriptor_pool as _descriptor_pool
 from google.protobuf import message as _message
 from google.protobuf import reflection as _reflection
 from google.protobuf import symbol_database as _symbol_database
+
 # @@protoc_insertion_point(imports)
 
 _sym_db = _symbol_database.Default()
 
 
-from google.protobuf import descriptor_pb2 as google_dot_protobuf_dot_descriptor__pb2
-
+from google.protobuf import \
+    descriptor_pb2 as google_dot_protobuf_dot_descriptor__pb2
 
 DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n yandex/cloud/api/operation.proto\x12\x10yandex.cloud.api\x1a google/protobuf/descriptor.proto\"/\n\tOperation\x12\x10\n\x08metadata\x18\x01 \x01(\t\x12\x10\n\x08response\x18\x02 \x01(\t:P\n\toperation\x12\x1e.google.protobuf.MethodOptions\x18\xa6\xaa\x05 \x01(\x0b\x32\x1b.yandex.cloud.api.OperationB:Z8github.com/yandex-cloud/go-genproto/yandex/cloud/api;apib\x06proto3')
 

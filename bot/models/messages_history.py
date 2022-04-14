@@ -1,9 +1,11 @@
 from __future__ import annotations
+
 import datetime
+
 import sqlalchemy as db
 
-from bot.models.base import BaseModel
 from bot.db import db_session
+from bot.models.base import BaseModel
 
 offset = datetime.timezone(datetime.timedelta(hours=3))
 
@@ -19,11 +21,17 @@ class MessagesHistory(BaseModel):
     @staticmethod
     def add_message(user_id, date):
         with db_session() as session:
-            messages_history = session.query(MessagesHistory).filter(MessagesHistory.user_id == user_id,
-                                                                     MessagesHistory.date == date).first()
+            messages_history = (
+                session.query(MessagesHistory)
+                .filter(
+                    MessagesHistory.user_id == user_id, MessagesHistory.date == date
+                )
+                .first()
+            )
             if not messages_history:
-                new_messages_history = MessagesHistory(user_id=user_id, date=date,
-                                                       messages=1)
+                new_messages_history = MessagesHistory(
+                    user_id=user_id, date=date, messages=1
+                )
                 session.add(new_messages_history)
             else:
                 messages_history.messages = messages_history.messages + 1
@@ -33,8 +41,14 @@ class MessagesHistory(BaseModel):
     @staticmethod
     def get(date):
         with db_session() as db:
-            return db.query(MessagesHistory).filter(
-                MessagesHistory.date == date).order_by(MessagesHistory.messages.desc()).offset(0).limit(5).all()
+            return (
+                db.query(MessagesHistory)
+                .filter(MessagesHistory.date == date)
+                .order_by(MessagesHistory.messages.desc())
+                .offset(0)
+                .limit(5)
+                .all()
+            )
 
 
 MessagesHistory.__table__.create(checkfirst=True)

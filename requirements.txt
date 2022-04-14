@@ -10,3 +10,5 @@ protobuf
 gcloud
 google-api-python-client
 python-telegram-bot-pagination
+aiohttp
+beautifulsoup4

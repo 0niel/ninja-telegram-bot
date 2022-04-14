@@ -1,6 +1,7 @@
-from bot import config
 from telegram import Message
 from telegram.ext import CallbackContext
+
+from bot import config
 
 
 def auto_delete_callback(context: CallbackContext) -> None:

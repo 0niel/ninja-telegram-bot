@@ -2,8 +2,11 @@
 """Client and server classes corresponding to protobuf-defined services."""
 import grpc
 
-from bot.utils.yandex.cloud.ai.stt.v2 import stt_service_pb2 as yandex_dot_cloud_dot_ai_dot_stt_dot_v2_dot_stt__service__pb2
-from bot.utils.yandex.cloud.operation import operation_pb2 as yandex_dot_cloud_dot_operation_dot_operation__pb2
+from bot.utils.yandex.cloud.ai.stt.v2 import \
+    stt_service_pb2 as \
+    yandex_dot_cloud_dot_ai_dot_stt_dot_v2_dot_stt__service__pb2
+from bot.utils.yandex.cloud.operation import \
+    operation_pb2 as yandex_dot_cloud_dot_operation_dot_operation__pb2
 
 
 class SttServiceStub(object):

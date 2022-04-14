@@ -1,5 +1,6 @@
 import logging
 from pathlib import Path
+
 from telegram.ext import Updater
 
 import bot.services.daily_job as daily_job

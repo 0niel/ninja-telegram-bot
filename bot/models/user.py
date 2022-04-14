@@ -1,11 +1,13 @@
 from __future__ import annotations
+
+from datetime import datetime, timedelta, timezone
+
 import sqlalchemy as db
 from sqlalchemy import func
-from datetime import datetime, timezone, timedelta
 from sqlalchemy.sql import expression
 
-from bot.models.base import BaseModel, TimedBaseModel
 from bot.db import db_session
+from bot.models.base import BaseModel, TimedBaseModel
 
 offset = timezone(timedelta(hours=3))
 

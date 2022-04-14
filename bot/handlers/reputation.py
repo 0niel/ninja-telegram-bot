@@ -1,7 +1,9 @@
 import logging
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ParseMode, Update
-from telegram.utils.helpers import escape_markdown
+
+from telegram import (InlineKeyboardButton, InlineKeyboardMarkup, ParseMode,
+                      Update)
 from telegram.ext import CallbackContext
+from telegram.utils.helpers import escape_markdown
 from telegram_bot_pagination import InlineKeyboardPaginator
 
 from bot.filters.has_user_in_args import HasUserInArgsFilter
@@ -9,7 +11,8 @@ from bot.handlers.users import users_updater
 from bot.models.reputation_update import ReputationUpdate
 from bot.models.user import User
 from bot.services.auto_delete import auto_delete
-from bot.services.reputation import compute_force, compute_rep, get_rating, get_rating_by_slice
+from bot.services.reputation import (compute_force, compute_rep, get_rating,
+                                     get_rating_by_slice)
 
 logger = logging.getLogger(__name__)
 
