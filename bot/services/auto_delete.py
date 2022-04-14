@@ -8,7 +8,7 @@ def auto_delete_callback(context: CallbackContext) -> None:
     context.job.context.delete()
 
 
-def auto_delete(message: Message, context: CallbackContext, from_message=None) -> None:
+def auto_delete(message: Message, context: CallbackContext, from_message=None, seconds=45) -> None:
     """Auto-deletion of the bot message after 45 seconds
 
     Args:
@@ -19,8 +19,8 @@ def auto_delete(message: Message, context: CallbackContext, from_message=None) -
     """
     if message.chat.id == config.MIREA_NINJA_GROUP_ID:
         context.job_queue.run_once(
-            auto_delete_callback, 45, context=message)
+            auto_delete_callback, seconds, context=message)
 
         if from_message:
             context.job_queue.run_once(
-                auto_delete_callback, 45, context=from_message)
+                auto_delete_callback, seconds, context=from_message)

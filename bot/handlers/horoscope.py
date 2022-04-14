@@ -56,7 +56,7 @@ def show_horoscope_signs_callback(update: Update, context: CallbackContext) -> N
                 )
             )
             i += 1
-            
+
             if i == 4:
                 i = 0
                 keyboard.append(keyboard_lines)
@@ -67,7 +67,7 @@ def show_horoscope_signs_callback(update: Update, context: CallbackContext) -> N
         reply_markup=InlineKeyboardMarkup(keyboard),
     )
 
-    auto_delete(new_message, context, from_message=update.effective_message)
+    auto_delete(new_message, context, from_message=update.effective_message, seconds=95)
 
 
 def show_horo_time_callback(update: Update, context: CallbackContext) -> None:
@@ -86,7 +86,7 @@ def show_horo_time_callback(update: Update, context: CallbackContext) -> None:
                     )
                 )
                 i += 1
-                
+
             if i == 2:
                 i = 0
                 keyboard.append(keyboard_lines)
@@ -117,7 +117,7 @@ def show_horo_callback(update: Update, context: CallbackContext) -> None:
         bs4 = BeautifulSoup(html, "html.parser")
         text = bs4.select_one(
             "body > div.layout > div:nth-child(3) > div > div.block.block_collapse.block_parallax.block_inner_shadow.block_no_overflow.block_black > div.wrapper.wrapper_outside.wrapper_6857 > div > div > div > div.cols__column.cols__column_small_32.cols__column_medium_43.cols__column_large_47 > div > div > div.p-prediction__inner > div.article.article_white.article_prediction.article_collapsed.margin_top_20 > div > div"
-        ).text
+        ).text.replace('\n', '\n\n')
 
         keyboard = [
             [
@@ -126,7 +126,7 @@ def show_horo_callback(update: Update, context: CallbackContext) -> None:
                 )
             ],
         ]
-        
+
         query.edit_message_text(text=text, reply_markup=InlineKeyboardMarkup(keyboard))
         query.answer()
     else:
