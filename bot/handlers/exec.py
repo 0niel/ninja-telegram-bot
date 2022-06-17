@@ -15,6 +15,7 @@ from bot import config
 from bot.models.user import User
 from bot.models.user_script import UserScript
 from bot.utils.safe_exec.executor import Executor
+from bot.utils.safe_exec.secure_compiler import BUILTINS_WHITELIST
 
 RE_SCRIPT_NAME = r"^[a-zA-Z0-9_-]{1,30}$"
 
@@ -30,7 +31,7 @@ def safe_exec(exec_command, update: Update, context: CallbackContext):
         for item in safe_locals_names:
             safe_locals[item] = locals().get(item, None)
 
-        safe_builtins = globals()["__builtins__"]
+        safe_builtins = BUILTINS_WHITELIST
         safe_builtins["print"] = update.message.reply_text
         safe_builtins["BytesIO"] = io.BytesIO
 

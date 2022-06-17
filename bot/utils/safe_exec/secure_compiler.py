@@ -23,6 +23,26 @@ BUILTINS_BLACKLIST = [
     "__loader__",
 ]
 
+BUILTINS_WHITELIST = {
+    "str": builtins.str,
+    "abs": builtins.abs,
+    "len": builtins.len,
+    "bool": builtins.bool,
+    "dict": builtins.dict,
+    "filter": builtins.filter,
+    "float": builtins.float,
+    "int": builtins.int,
+    "list": builtins.list,
+    "map": builtins.map,
+    "max": builtins.max,
+    "min": builtins.min,
+    "pow": builtins.pow,
+    "range": builtins.range,
+    "round": builtins.round,
+    "set": builtins.set,
+    "sum": builtins.sum,
+    "__import__": builtins.__import__,
+}
 
 MODULES_WHITELIST = [
     "math",
@@ -45,17 +65,11 @@ class UnsafeCodeError(Exception):
 
 
 class SecureNodeVisitor(ast.NodeVisitor):
-    def visit_Name(self, node: ast.Name) -> Any:
-        if node.id in BUILTINS_BLACKLIST:
-            raise UnsafeCodeError("Operation with these builtins is disallowed")
-
     def visit_Attribute(self, node: ast.Attribute) -> Any:
         if "__" in node.attr:
             raise UnsafeCodeError("Attempting to access private attribute")
         elif node.attr in ATTRIBUTES_BLACKLIST:
             raise UnsafeCodeError("Operation with these attributes is disallowed")
-        elif node.attr in BUILTINS_BLACKLIST:
-            raise UnsafeCodeError("Operation with these builtins is disallowed")
 
     def visit_Import(self, node: ast.Import) -> Any:
         for alias in node.names:
