@@ -1,13 +1,11 @@
 import logging
 
-from telegram.ext import (
-    CallbackQueryHandler,
-    CommandHandler,
-    Dispatcher,
-    Filters,
-    MessageHandler,
-)
+from telegram.ext import (CallbackQueryHandler, CommandHandler, Dispatcher,
+                          Filters, MessageHandler)
 
+from bot.handlers.exec import (script_changedesc_handler,
+                               script_delete_handler, script_rename_handler,
+                               scripts_handler)
 
 logger = logging.getLogger(__name__)
 
@@ -15,22 +13,21 @@ logger = logging.getLogger(__name__)
 def setup(dispatcher: Dispatcher):
     logger.info("Setup handlers...")
 
-    from bot.handlers.horoscope import (
-        show_horo_callback,
-        show_horo_time_callback,
-        show_horoscope_signs_callback,
-    )
     from bot.filters.reputation_change import ReputationChangeFilter
+    from bot.handlers.exec import (exec_handler, load_script_handler,
+                                   save_script_handler,
+                                   scripts_callback_page_callback)
     from bot.handlers.help import help_callback
-    from bot.handlers.reputation import (
-        about_user_callback,
-        reputation_callback,
-        reputation_history_callback,
-        reputation_history_page_callback,
-        show_leaders_callback,
-        show_self_rating_callback,
-        show_self_rating_position_callback,
-    )
+    from bot.handlers.horoscope import (show_horo_callback,
+                                        show_horo_time_callback,
+                                        show_horoscope_signs_callback)
+    from bot.handlers.reputation import (about_user_callback,
+                                         reputation_callback,
+                                         reputation_history_callback,
+                                         reputation_history_page_callback,
+                                         show_leaders_callback,
+                                         show_self_rating_callback,
+                                         show_self_rating_position_callback)
     from bot.handlers.rules import rules_callback
     from bot.handlers.users import users_updater
     from bot.handlers.voice_to_text import voice_to_text_callback
@@ -102,4 +99,31 @@ def setup(dispatcher: Dispatcher):
     )
     dispatcher.add_handler(
         CallbackQueryHandler(show_horo_callback, pattern="^show_horo#")
+    )
+
+    # exec mode
+    dispatcher.add_handler(
+        CommandHandler("exec", exec_handler, run_async=True), group=33
+    )
+    dispatcher.add_handler(
+        CommandHandler("load", load_script_handler, run_async=True), group=34
+    )
+    dispatcher.add_handler(
+        CommandHandler("save", save_script_handler, run_async=True), group=35
+    )
+    dispatcher.add_handler(
+        CommandHandler("scripts", scripts_handler, run_async=True), group=36
+    )
+    dispatcher.add_handler(
+        CommandHandler("rename", script_rename_handler, run_async=True), group=37
+    )
+    dispatcher.add_handler(
+        CommandHandler("changedesc", script_changedesc_handler, run_async=True),
+        group=38,
+    )
+    dispatcher.add_handler(
+        CommandHandler("delete", script_delete_handler, run_async=True), group=39
+    )
+    dispatcher.add_handler(
+        CallbackQueryHandler(scripts_callback_page_callback, pattern="^scripts#")
     )

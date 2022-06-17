@@ -9,8 +9,9 @@ from bot import config
 
 logger = logging.getLogger(__name__)
 
-engine = create_engine(config.POSTGRES_URI,
-                       client_encoding="utf8", isolation_level='AUTOCOMMIT')
+engine = create_engine(
+    config.POSTGRES_URI, client_encoding="utf8", isolation_level="AUTOCOMMIT"
+)
 base = declarative_base()
 base.metadata.bind = engine
 base.metadata.create_all(engine)
@@ -22,7 +23,7 @@ def db_session():
     try:
         yield session
     except:
-        logger.error('An error has occured in runtime SQL query.')
+        logger.error("An error has occured in runtime SQL query.")
         session.rollback()
         raise
     finally:

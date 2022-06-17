@@ -1,5 +1,7 @@
 import json
+
 import requests
+
 from bot import config
 
 CONDITIONS = {
@@ -88,11 +90,13 @@ def get_weather_text(dict_weather_yandex):
     for i in dict_weather_yandex.keys():
         if i != "link":
             time_day = day[i]
-            temp = '+' + \
-                str(dict_weather_yandex[i]["temp"]) if dict_weather_yandex[i]["temp"] > 0 else str(
-                    dict_weather_yandex[i]["temp"])
+            temp = (
+                "+" + str(dict_weather_yandex[i]["temp"])
+                if dict_weather_yandex[i]["temp"] > 0
+                else str(dict_weather_yandex[i]["temp"])
+            )
             message += (
-                f'Температура {time_day} {temp}, '
+                f"Температура {time_day} {temp}, "
                 f'{dict_weather_yandex[i]["condition"]}\n',
             )[0]
 

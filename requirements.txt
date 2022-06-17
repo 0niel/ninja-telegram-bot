@@ -12,3 +12,5 @@ google-api-python-client
 python-telegram-bot-pagination
 aiohttp
 beautifulsoup4
+Pillow
+gtts

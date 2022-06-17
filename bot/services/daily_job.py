@@ -1,12 +1,13 @@
 import datetime
 import os
-from pathlib import Path
 import random
+from pathlib import Path
 
 import pytz
 from telegram import ParseMode
 from telegram.ext import JobQueue
 from telegram.utils.helpers import escape_markdown
+
 from bot import config
 from bot.models.messages_history import MessagesHistory
 from bot.models.user import User
@@ -64,7 +65,7 @@ def daily_weather_job(context):
     context.bot.send_photo(
         chat_id=config.MIREA_NINJA_GROUP_ID,
         photo=open(
-            os.path.join(app_dir, "files", str(random.randint(0, 2485)) + ".jpg"), "rb"
+            os.path.join(app_dir, "files", str(random.randint(0, 1500)) + ".jpg"), "rb"
         ),
         caption=text,
         parse_mode=ParseMode.MARKDOWN_V2,

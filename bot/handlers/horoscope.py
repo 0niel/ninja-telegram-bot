@@ -1,20 +1,17 @@
 import logging
-from bs4 import BeautifulSoup
-import requests
 
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ParseMode, Update
+import requests
+from bs4 import BeautifulSoup
+from telegram import (InlineKeyboardButton, InlineKeyboardMarkup, ParseMode,
+                      Update)
 from telegram.ext import CallbackContext
 from telegram.utils.helpers import escape_markdown
 from telegram_bot_pagination import InlineKeyboardPaginator
 
 from bot.models.user import User
 from bot.services.auto_delete import auto_delete
-from bot.services.reputation import (
-    compute_force,
-    compute_rep,
-    get_rating,
-    get_rating_by_slice,
-)
+from bot.services.reputation import (compute_force, compute_rep, get_rating,
+                                     get_rating_by_slice)
 
 logger = logging.getLogger(__name__)
 
@@ -117,7 +114,7 @@ def show_horo_callback(update: Update, context: CallbackContext) -> None:
         bs4 = BeautifulSoup(html, "html.parser")
         text = bs4.select_one(
             "body > div.layout > div:nth-child(3) > div > div.block.block_collapse.block_parallax.block_inner_shadow.block_no_overflow.block_black > div.wrapper.wrapper_outside.wrapper_6857 > div > div > div > div.cols__column.cols__column_small_32.cols__column_medium_43.cols__column_large_47 > div > div > div.p-prediction__inner > div.article.article_white.article_prediction.article_collapsed.margin_top_20 > div > div"
-        ).text.replace('\n', '\n\n')
+        ).text.replace("\n", "\n\n")
 
         keyboard = [
             [
