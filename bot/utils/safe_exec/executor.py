@@ -20,7 +20,7 @@ class ExecTimeoutError(Exception):
 class Executor:
     def __init__(
         self,
-        timeout: Union[int, float] = 10,
+        timeout: Union[int, float] = 15,
         checks_per_second: int = 40,
     ):
         self.timeout = timeout
@@ -49,7 +49,7 @@ class Executor:
                 return exec_time
 
         task.stop()
-        raise ExecTimeoutError("Timed out!")
+        # raise ExecTimeoutError("Timed out!")
 
 
 class SubprocessTask:
