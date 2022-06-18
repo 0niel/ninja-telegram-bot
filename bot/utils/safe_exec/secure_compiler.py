@@ -2,7 +2,14 @@ import ast
 import builtins
 from typing import Any
 
-ATTRIBUTES_BLACKLIST = ["token", "base_url", "request", "private_key"]
+ATTRIBUTES_BLACKLIST = [
+    "token",
+    "base_url",
+    "request",
+    "private_key",
+    "leaveChat",
+    "leave_chat",
+]
 
 BUILTINS_BLACKLIST = [
     "exec",
@@ -57,6 +64,7 @@ MODULES_WHITELIST = [
     "textwrap",
     "gtts",
     "json",
+    "collections",
 ]
 
 
