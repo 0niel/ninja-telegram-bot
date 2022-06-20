@@ -17,3 +17,5 @@ def voice_to_text_callback(update: Update, context: CallbackContext) -> None:
 
     if text:
         new_msg.edit_text("Текст аудио:\n\n" + text)
+    else:
+        new_msg.edit_text("🤷‍♂️ Мне не удалось распознать текст." + text)
