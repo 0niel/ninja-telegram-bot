@@ -76,17 +76,18 @@ def get_rating(users: List[User]) -> str:
         medal = ""
         if i in medals:
             medal = medals[i]
-
+        reputation = "{:.3f}".format(users[i].reputation)
+        force = "{:.3f}".format(users[i].force)
         lines.append(
             str(i + 1)
             + ". {} - {} репутации и {} влияния {}".format(
                 users[i].first_name
                 + " "
                 + (users[i].last_name if users[i].last_name is not None else ""),
-                users[i].reputation
+                reputation
                 if users[i].reputation >= 0
-                else f"({users[i].reputation})",
-                users[i].force,
+                else f"({reputation})",
+                force,
                 medal,
             )
         )
@@ -101,16 +102,18 @@ def get_rating_by_slice(users_slice, user_id) -> str:
         lines.append("**. . .**")
 
     for user in users_slice:
+        reputation = "{:.3f}".format(user[0].reputation)
+        force = "{:.3f}".format(user[0].force)
         line = escape_markdown(
             str(user[1])
             + ". {} - {} репутации и {} влияния".format(
                 user[0].first_name
                 + " "
                 + (user[0].last_name if user[0].last_name is not None else ""),
-                user[0].reputation
-                if user[0].reputation >= 0
-                else f"({user[0].reputation})",
-                user[0].force,
+                reputation
+                if reputation >= 0
+                else f"({reputation})",
+                force,
             )
         )
 
