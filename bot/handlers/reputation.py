@@ -34,19 +34,19 @@ def reputation_callback(update: Update, context: CallbackContext) -> None:
             error_message = message.reply_text(
                 "❌ Эта команда работает только в группе Mirea Ninja!"
             )
-        if not message.reply_to_message:
+        elif not message.reply_to_message:
             error_message = message.reply_text(
                 "❌ Вы должны ответить на сообщение пользователя!"
             )
-        if not message.from_user:
+        elif not message.from_user:
             error_message = message.reply_text(
                 "❌ Изменять репутацию может только пользователь!"
             )
-        if message.reply_to_message.from_user.id == message.from_user.id:
+        elif message.reply_to_message.from_user.id == message.from_user.id:
             error_message = message.reply_text(
                 "❌ Вы не можете изменить репутацию самому себе!"
             )
-        if message.reply_to_message.from_user.is_bot:
+        elif message.reply_to_message.from_user.is_bot:
             error_message = message.reply_text(
                 "❌ Вы не можете изменить репутацию бота!"
             )
@@ -111,6 +111,7 @@ def reputation_callback(update: Update, context: CallbackContext) -> None:
         to_username = message.reply_to_message.from_user.first_name
 
         new_user_rep_delta = round(new_user_rep_delta, 3)
+
         new_rep = (
             "+" + str(new_user_rep_delta)
             if new_user_rep_delta > 0
@@ -123,7 +124,7 @@ def reputation_callback(update: Update, context: CallbackContext) -> None:
 
         new_message = context.bot.send_message(
             message.chat_id,
-            f"{icon} *{from_username}* ({from_user.reputation}, {from_user.force}) "
+            f"{icon} *{from_username}* ({from_user.reputation:.3f}, {from_user.force:.3f}) "
             f"обновил(а) вам репутацию ({new_rep})",
             reply_to_message_id=message.reply_to_message.message_id,
             parse_mode=ParseMode.MARKDOWN,
@@ -153,7 +154,9 @@ def show_self_rating_callback(update: Update, context: CallbackContext) -> None:
 
     new_message = update.effective_message.reply_text(
         "{}, у вас {} рейтинга и {} очков влияния".format(
-            update.effective_message.from_user.first_name, user.reputation, user.force
+            update.effective_message.from_user.first_name,
+            f"{user.reputation:.3f}",
+            f"{user.force:.3f}",
         ),
         reply_markup=InlineKeyboardMarkup(keyboard),
     )
@@ -198,7 +201,7 @@ def about_user_callback(update: Update, context: CallbackContext) -> None:
     if user:
         new_message = update.effective_message.reply_text(
             "Пользователь {} имеет {} рейтинга и {} очков влияния".format(
-                user.first_name, user.reputation, user.force
+                user.first_name, f"{user.reputation:.3f}", f"{user.force:.3f}"
             )
         )
     else:
@@ -239,8 +242,6 @@ def get_logs_data(user_id):
                 if history[i].force_delta > 0
                 else str(history[i].force_delta)
             )
-
-            new_rep = str(history[i].new_reputation)
 
             index = str(i + 1)
 
