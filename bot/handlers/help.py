@@ -1,6 +1,7 @@
 from telegram import ParseMode, Update
-from telegram.ext import CallbackContext
+from telegram.ext import CallbackContext, CommandHandler
 
+from bot import dispatcher
 from bot.services.auto_delete import auto_delete
 
 
@@ -13,3 +14,7 @@ def help_callback(update: Update, context: CallbackContext) -> None:
     )
 
     auto_delete(new_message, context, from_message=update.effective_message)
+
+
+# show brief information about the bot
+dispatcher.add_handler(CommandHandler("help", help_callback), group=4)

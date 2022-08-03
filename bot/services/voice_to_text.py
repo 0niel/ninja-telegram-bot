@@ -2,12 +2,13 @@ import logging
 
 import grpc
 
-# import bot.utils.yandex.cloud.ai.stt.v2.stt_service_pb2 as stt_service_pb2
-# import bot.utils.yandex.cloud.ai.stt.v2.stt_service_pb2_grpc as stt_service_pb2_grpc
-
 import bot.utils.yandex.cloud.ai.stt.v3.stt_pb2 as stt_pb2
 import bot.utils.yandex.cloud.ai.stt.v3.stt_service_pb2_grpc as stt_service_pb2_grpc
 from bot import config
+
+# import bot.utils.yandex.cloud.ai.stt.v2.stt_service_pb2 as stt_service_pb2
+# import bot.utils.yandex.cloud.ai.stt.v2.stt_service_pb2_grpc as stt_service_pb2_grpc
+
 
 logger = logging.getLogger(__name__)
 

@@ -1,9 +1,8 @@
-import logging
-
 from telegram import ParseMode, Update
-from telegram.ext import CallbackContext
+from telegram.ext import CallbackContext, CommandHandler
 from telegram.utils.helpers import escape_markdown
 
+from bot import dispatcher
 from bot.services.auto_delete import auto_delete
 
 RULES_TEXT = (
@@ -27,3 +26,7 @@ def rules_callback(update: Update, context: CallbackContext) -> None:
         parse_mode=ParseMode.MARKDOWN_V2,
     )
     auto_delete(message, context, from_message=update.effective_message)
+
+
+# show chat rules
+dispatcher.add_handler(CommandHandler("rules", rules_callback), group=5)

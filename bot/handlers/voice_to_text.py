@@ -1,6 +1,7 @@
 from telegram import Update
-from telegram.ext import CallbackContext
+from telegram.ext import CallbackContext, Filters, MessageHandler
 
+from bot import dispatcher
 from bot.services import voice_to_text as voice_to_text
 
 
@@ -19,3 +20,9 @@ def voice_to_text_callback(update: Update, context: CallbackContext) -> None:
         new_msg.edit_text("Текст аудио:\n\n" + text)
     else:
         new_msg.edit_text("🤷‍♂️ Мне не удалось распознать текст." + text)
+
+
+dispatcher.add_handler(
+    MessageHandler(Filters.voice & Filters.chat_type.groups, voice_to_text_callback),
+    group=6,
+)

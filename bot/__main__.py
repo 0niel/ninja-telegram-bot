@@ -1,34 +1,14 @@
-import logging
-from pathlib import Path
-
-from telegram.ext import Updater
-
 import bot.services.daily_job as daily_job
+from bot import handlers
 
-from . import config
-
-# Enable logging
-logging.basicConfig(
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
-)
-
-logger = logging.getLogger(__name__)
-
-app_dir: Path = Path(__file__).parent.parent
+from . import updater
 
 
 def main() -> None:
     """Start the bot."""
-    from bot import handlers
-
-    # Create the Updater and pass it your bot's token.
-    updater = Updater(config.TELEGRAM_TOKEN, use_context=True)
-
-    # Get the dispatcher to register handlers
-    dispatcher = updater.dispatcher
 
     # Setup command and message handlers
-    handlers.setup(dispatcher)
+    handlers.setup()
 
     # Setup daily notification job
     daily_job.setup(updater.job_queue)

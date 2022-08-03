@@ -2,8 +2,6 @@ import re
 
 from telegram.ext import MessageFilter
 
-from bot import config
-
 
 class HasUserInArgsFilter(MessageFilter):
     name = "has_user_in_ars_filter"

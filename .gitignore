@@ -1,6 +1,7 @@
 .idea/
 *.pyc
 *.psd
+*.ogg
 log/
 *.log
 *.db

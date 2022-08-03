@@ -1,25 +1,59 @@
 import logging
 
-from telegram import (InlineKeyboardButton, InlineKeyboardMarkup, ParseMode,
-                      Update)
-from telegram.ext import CallbackContext
-from telegram.utils.helpers import escape_markdown
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ParseMode, Update
+from telegram.ext import (
+    CallbackContext,
+    CallbackQueryHandler,
+    CommandHandler,
+    MessageHandler,
+)
 from telegram_bot_pagination import InlineKeyboardPaginator
 
+from bot import dispatcher, config
 from bot.filters.has_user_in_args import HasUserInArgsFilter
+from bot.filters.reputation_change import ReputationChangeFilter
 from bot.handlers.users import users_updater
 from bot.models.reputation_update import ReputationUpdate
 from bot.models.user import User
 from bot.services.auto_delete import auto_delete
-from bot.services.reputation import (compute_force, compute_rep, get_rating,
-                                     get_rating_by_slice)
+from bot.services.reputation import (
+    compute_force,
+    compute_rep,
+    get_rating,
+    get_rating_by_slice,
+)
 
 logger = logging.getLogger(__name__)
 
 
 def reputation_callback(update: Update, context: CallbackContext) -> None:
+    message = update.effective_message
     if context.reputation:
-        message = update.effective_message
+        error_message = None
+        if message.chat.id != config.MIREA_NINJA_GROUP_ID:
+            error_message = message.reply_text(
+                "❌ Эта команда работает только в группе Mirea Ninja!"
+            )
+        if not message.reply_to_message:
+            error_message = message.reply_text(
+                "❌ Вы должны ответить на сообщение пользователя!"
+            )
+        if not message.from_user:
+            error_message = message.reply_text(
+                "❌ Изменять репутацию может только пользователь!"
+            )
+        if message.reply_to_message.from_user.id == message.from_user.id:
+            error_message = message.reply_text(
+                "❌ Вы не можете изменить репутацию самому себе!"
+            )
+        if message.reply_to_message.from_user.is_bot:
+            error_message = message.reply_text(
+                "❌ Вы не можете изменить репутацию бота!"
+            )
+
+        if error_message:
+            auto_delete(error_message, context)
+            return
 
         from_user_id = message.from_user.id
         to_user_id = message.reply_to_message.from_user.id
@@ -260,3 +294,38 @@ def reputation_history_page_callback(update: Update, context: CallbackContext) -
         )
     else:
         query.answer("Вы не можете пользоваться данной клавиатурой")
+
+
+# on non command i.e message
+dispatcher.add_handler(
+    MessageHandler(ReputationChangeFilter(), reputation_callback, run_async=True),
+    group=1,
+)
+
+# show reputation information about a certain person
+dispatcher.add_handler(
+    CommandHandler("about", about_user_callback, run_async=True), group=7
+)
+
+dispatcher.add_handler(
+    CommandHandler("history", reputation_history_callback, run_async=True), group=8
+)
+
+# called by the keyboard when viewing the reputation history
+dispatcher.add_handler(
+    CallbackQueryHandler(reputation_history_page_callback, pattern="^logs#")
+)
+
+# show reputation rating table
+dispatcher.add_handler(
+    CommandHandler("rating", show_leaders_callback, run_async=True), group=2
+)
+
+# show self rating
+dispatcher.add_handler(
+    CommandHandler("me", show_self_rating_callback, run_async=True), group=3
+)
+
+dispatcher.add_handler(
+    CallbackQueryHandler(show_self_rating_position_callback, pattern="^show_pos#")
+)

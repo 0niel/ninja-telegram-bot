@@ -84,9 +84,7 @@ def get_rating(users: List[User]) -> str:
                 users[i].first_name
                 + " "
                 + (users[i].last_name if users[i].last_name is not None else ""),
-                reputation
-                if users[i].reputation >= 0
-                else f"({reputation})",
+                reputation if users[i].reputation >= 0 else f"({reputation})",
                 force,
                 medal,
             )
@@ -110,9 +108,7 @@ def get_rating_by_slice(users_slice, user_id) -> str:
                 user[0].first_name
                 + " "
                 + (user[0].last_name if user[0].last_name is not None else ""),
-                reputation
-                if reputation >= 0
-                else f"({reputation})",
+                reputation if user[0].reputation >= 0 else f"({reputation})",
                 force,
             )
         )

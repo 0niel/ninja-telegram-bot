@@ -2,16 +2,11 @@ import logging
 
 import requests
 from bs4 import BeautifulSoup
-from telegram import (InlineKeyboardButton, InlineKeyboardMarkup, ParseMode,
-                      Update)
-from telegram.ext import CallbackContext
-from telegram.utils.helpers import escape_markdown
-from telegram_bot_pagination import InlineKeyboardPaginator
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, ParseMode, Update
+from telegram.ext import CallbackContext, CallbackQueryHandler, CommandHandler
 
-from bot.models.user import User
+from bot import dispatcher
 from bot.services.auto_delete import auto_delete
-from bot.services.reputation import (compute_force, compute_rep, get_rating,
-                                     get_rating_by_slice)
 
 logger = logging.getLogger(__name__)
 
@@ -128,3 +123,11 @@ def show_horo_callback(update: Update, context: CallbackContext) -> None:
         query.answer()
     else:
         query.answer("Вы не можете пользоваться данной клавиатурой")
+
+
+# show horoscope ;d
+dispatcher.add_handler(CommandHandler("horo", show_horoscope_signs_callback), group=22)
+dispatcher.add_handler(
+    CallbackQueryHandler(show_horo_time_callback, pattern="^show_horo_time#")
+)
+dispatcher.add_handler(CallbackQueryHandler(show_horo_callback, pattern="^show_horo#"))

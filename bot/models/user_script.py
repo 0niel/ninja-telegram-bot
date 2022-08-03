@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import datetime
-from enum import unique
 
 import sqlalchemy as db
 

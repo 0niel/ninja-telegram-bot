@@ -1,9 +1,9 @@
 import datetime
-import logging
 
 from telegram import Update
-from telegram.ext import CallbackContext
+from telegram.ext import CallbackContext, Filters, MessageHandler
 
+from bot import dispatcher
 from bot.models.messages_history import MessagesHistory
 from bot.models.user import User
 
@@ -39,3 +39,10 @@ def users_updater(update: Update, context: CallbackContext) -> None:
             msg.forward_from.first_name,
             msg.forward_from.last_name,
         )
+
+
+dispatcher.add_handler(
+    MessageHandler(
+        Filters.all & Filters.chat_type.groups, users_updater, run_async=True
+    )
+)
