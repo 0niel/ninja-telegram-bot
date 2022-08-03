@@ -30,6 +30,7 @@ def reputation_callback(update: Update, context: CallbackContext) -> None:
     message = update.effective_message
     if context.reputation:
         error_message = None
+
         if message.chat.id != config.MIREA_NINJA_GROUP_ID:
             error_message = message.reply_text(
                 "❌ Эта команда работает только в группе Mirea Ninja!"
@@ -38,7 +39,7 @@ def reputation_callback(update: Update, context: CallbackContext) -> None:
             error_message = message.reply_text(
                 "❌ Вы должны ответить на сообщение пользователя!"
             )
-        elif not message.from_user:
+        elif message.from_user.is_bot:
             error_message = message.reply_text(
                 "❌ Изменять репутацию может только пользователь!"
             )
