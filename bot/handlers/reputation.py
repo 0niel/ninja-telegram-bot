@@ -36,9 +36,10 @@ def reputation_callback(update: Update, context: CallbackContext) -> None:
                 "❌ Эта команда работает только в группе Mirea Ninja!"
             )
         elif not message.reply_to_message:
-            error_message = message.reply_text(
-                "❌ Вы должны ответить на сообщение пользователя!"
-            )
+            # error_message = message.reply_text(
+            #     "❌ Вы должны ответить на сообщение пользователя!"
+            # )
+            return
         elif message.from_user.is_bot:
             error_message = message.reply_text(
                 "❌ Изменять репутацию может только пользователь!"
