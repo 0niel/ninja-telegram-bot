@@ -233,25 +233,27 @@ def get_logs_data(user_id):
             history[i].reputation_delta = round(history[i].reputation_delta, 3)
             history[i].force_delta = round(history[i].force_delta, 3)
 
-            new_rep = (
+            rep_delta = (
                 "+" + str(history[i].reputation_delta)
                 if history[i].reputation_delta > 0
                 else str(history[i].reputation_delta)
             )
 
-            new_force = (
+            force_delta = (
                 "+" + str(history[i].force_delta)
                 if history[i].force_delta > 0
                 else str(history[i].force_delta)
             )
 
+            new_rep = str(round(history[i].new_reputation, 3))
+
             index = str(i + 1)
 
             if i % 10 != 0 or i == 0:
-                logs_text += f"{index}. <b>{from_user.first_name}</b> изменил(а) репутацию {updated_at_date} в {updated_at_time} ({new_rep}; {new_force}). Новая репутация: <i>{new_rep}</i>\n\n"
+                logs_text += f"{index}. <b>{from_user.first_name}</b> изменил(а) репутацию {updated_at_date} в {updated_at_time} ({rep_delta}; {force_delta}). Новая репутация: <i>{new_rep}</i>\n\n"
             else:
                 logs_data.append(logs_text)
-                logs_text = f"{index}. <b>{from_user.first_name}</b> изменил(а) репутацию {updated_at_date} в {updated_at_time} ({new_rep}; {new_force}). Новая репутация: <i>{new_rep}</i>\n\n"
+                logs_text = f"{index}. <b>{from_user.first_name}</b> изменил(а) репутацию {updated_at_date} в {updated_at_time} ({rep_delta}; {force_delta}). Новая репутация: <i>{new_rep}</i>\n\n"
 
         if logs_text != "":
             logs_data.append(logs_text)
