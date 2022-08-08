@@ -54,7 +54,7 @@ def reputation_callback(update: Update, context: CallbackContext) -> None:
             )
 
         if error_message:
-            auto_delete(error_message, context)
+            # auto_delete(error_message, context)
             return
 
         from_user_id = message.from_user.id
@@ -73,7 +73,7 @@ def reputation_callback(update: Update, context: CallbackContext) -> None:
                 new_message = message.reply_text(
                     "❌ Репутацию можно изменять один раз в 10 минут!"
                 )
-                auto_delete(new_message, context)
+                # auto_delete(new_message, context)
                 return
 
         if ReputationUpdate.is_user_send_rep_to_message(
@@ -82,7 +82,7 @@ def reputation_callback(update: Update, context: CallbackContext) -> None:
             new_message = message.reply_text(
                 "❌ Вы уже изменяли репутацию, используя это сообщение!"
             )
-            auto_delete(new_message, context)
+            # auto_delete(new_message, context)
             return
 
         reputation_change = context.reputation[0]["reputation_change"]
@@ -131,7 +131,7 @@ def reputation_callback(update: Update, context: CallbackContext) -> None:
             reply_to_message_id=message.reply_to_message.message_id,
             parse_mode=ParseMode.MARKDOWN,
         )
-        auto_delete(new_message, context)
+        # auto_delete(new_message, context)
 
 
 def show_leaders_callback(update: Update, context: CallbackContext) -> None:
