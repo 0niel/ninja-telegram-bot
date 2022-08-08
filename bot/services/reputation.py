@@ -77,7 +77,7 @@ def get_rating(users: List[User]) -> str:
         if i in medals:
             medal = medals[i]
         reputation = f"{users[i].reputation:.3f}"
-        force = f"{users[i].reputation:.3f}"
+        force = f"{users[i].force:.3f}"
         lines.append(
             str(i + 1)
             + ". {} - {} репутации и {} влияния {}".format(
