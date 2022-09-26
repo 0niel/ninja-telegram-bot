@@ -32,7 +32,7 @@ def compute_force(rep, force) -> float:
     )
 
     new_force_delta = rep * delta
-    new_force_delta = 0 if new_force_delta < 0 else new_force_delta
+    new_force_delta = max(new_force_delta, 0)
 
     return new_force_delta
 
@@ -66,12 +66,11 @@ def compute_rep(rep, force) -> float:
 
 
 def get_rating(users: List[User]) -> str:
-    if len(users) == 0:
+    if not users:
         return "На данный момент нет активных участников для формирования рейтинга"
 
-    medals = {0: "🥇", 1: "🥈", 2: "🥉"}
-
     lines = []
+    medals = {0: "🥇", 1: "🥈", 2: "🥉"}
     for i in range(len(users)):
         medal = ""
         if i in medals:
@@ -79,16 +78,9 @@ def get_rating(users: List[User]) -> str:
         reputation = f"{users[i].reputation:.3f}"
         force = f"{users[i].force:.3f}"
         lines.append(
-            str(i + 1)
-            + ". {} - {} репутации и {} влияния {}".format(
-                users[i].first_name
-                + " "
-                + (users[i].last_name if users[i].last_name is not None else ""),
-                reputation if users[i].reputation >= 0 else f"({reputation})",
-                force,
-                medal,
-            )
+            f'{str(i + 1)}. {f"{users[i].first_name} " + (users[i].last_name if users[i].last_name is not None else "")} - {reputation if users[i].reputation >= 0 else f"({reputation})"} репутации и {force} влияния {medal}'
         )
+
 
     return "*Рейтинг:*\n\n" + escape_markdown("\n".join(lines))
 
@@ -100,18 +92,12 @@ def get_rating_by_slice(users_slice, user_id) -> str:
         lines.append("**. . .**")
 
     for user in users_slice:
-        reputation = f"{user[0].reputation:.3f}"
         force = f"{user[0].force:.3f}"
+        reputation = f"{user[0].reputation:.3f}"
         line = escape_markdown(
-            str(user[1])
-            + ". {} - {} репутации и {} влияния".format(
-                user[0].first_name
-                + " "
-                + (user[0].last_name if user[0].last_name is not None else ""),
-                reputation if user[0].reputation >= 0 else f"({reputation})",
-                force,
-            )
+            f'{str(user[1])}. {f"{user[0].first_name} " + (user[0].last_name if user[0].last_name is not None else "")} - {reputation if user[0].reputation >= 0 else f"({reputation})"} репутации и {force} влияния'
         )
+
 
         if user[0].id == user_id:
             line = f"*{line}*"

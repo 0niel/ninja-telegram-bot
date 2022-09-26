@@ -9,7 +9,4 @@ class HasUserInArgsFilter(MessageFilter):
     def filter(self, message):
         text = message.text.split()
 
-        if len(text) >= 2:
-            return re.search(r"@.+", text[1])
-
-        return False
+        return re.search(r"@.+", text[1]) if len(text) >= 2 else False

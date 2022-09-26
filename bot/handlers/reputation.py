@@ -27,110 +27,114 @@ logger = logging.getLogger(__name__)
 
 
 def reputation_callback(update: Update, context: CallbackContext) -> None:
+    if not context.reputation:
+        return
+    error_message = None
+
     message = update.effective_message
-    if context.reputation:
-        error_message = None
+    if message.chat.id != config.MIREA_NINJA_GROUP_ID:
+        error_message = message.reply_text(
+            "❌ Эта команда работает только в группе Mirea Ninja!"
+        )
+    elif not message.reply_to_message:
+        # error_message = message.reply_text(
+        #     "❌ Вы должны ответить на сообщение пользователя!"
+        # )
+        return
+    elif message.from_user.is_bot:
+        error_message = message.reply_text(
+            "❌ Изменять репутацию может только пользователь!"
+        )
+    elif message.reply_to_message.from_user.id == message.from_user.id:
+        error_message = message.reply_text(
+            "❌ Вы не можете изменить репутацию самому себе!"
+        )
+    elif message.reply_to_message.from_user.is_bot:
+        error_message = message.reply_text(
+            "❌ Вы не можете изменить репутацию бота!"
+        )
 
-        if message.chat.id != config.MIREA_NINJA_GROUP_ID:
-            error_message = message.reply_text(
-                "❌ Эта команда работает только в группе Mirea Ninja!"
-            )
-        elif not message.reply_to_message:
-            # error_message = message.reply_text(
-            #     "❌ Вы должны ответить на сообщение пользователя!"
-            # )
-            return
-        elif message.from_user.is_bot:
-            error_message = message.reply_text(
-                "❌ Изменять репутацию может только пользователь!"
-            )
-        elif message.reply_to_message.from_user.id == message.from_user.id:
-            error_message = message.reply_text(
-                "❌ Вы не можете изменить репутацию самому себе!"
-            )
-        elif message.reply_to_message.from_user.is_bot:
-            error_message = message.reply_text(
-                "❌ Вы не можете изменить репутацию бота!"
-            )
+    if error_message:
+        # auto_delete(error_message, context)
+        return
 
-        if error_message:
-            # auto_delete(error_message, context)
-            return
+    from_user_id = message.from_user.id
+    to_user_id = message.reply_to_message.from_user.id
 
-        from_user_id = message.from_user.id
-        to_user_id = message.reply_to_message.from_user.id
+    from_user = User.get(from_user_id)
+    to_user = User.get(to_user_id)
 
+    if from_user is None or to_user is None:
+        users_updater(update, context)
         from_user = User.get(from_user_id)
         to_user = User.get(to_user_id)
 
-        if from_user is None or to_user is None:
-            users_updater(update, context)
-            from_user = User.get(from_user_id)
-            to_user = User.get(to_user_id)
-
-        if from_user.update_reputation_at:
-            if from_user.is_rep_change_available() is False:
-                new_message = message.reply_text(
-                    "❌ Репутацию можно изменять один раз в 10 минут!"
-                )
-                # auto_delete(new_message, context)
-                return
-
-        if ReputationUpdate.is_user_send_rep_to_message(
-            from_user_id, message.reply_to_message.message_id
-        ):
-            new_message = message.reply_text(
-                "❌ Вы уже изменяли репутацию, используя это сообщение!"
-            )
-            # auto_delete(new_message, context)
-            return
-
-        reputation_change = context.reputation[0]["reputation_change"]
-
-        new_user_rep_delta = round(compute_rep(reputation_change, from_user.force), 5)
-        new_user_force_delta = round(
-            compute_force(reputation_change, from_user.force), 5
+    if (
+        from_user.update_reputation_at
+        and from_user.is_rep_change_available() is False
+    ):
+        new_message = message.reply_text(
+            "❌ Репутацию можно изменять один раз в 10 минут!"
         )
+        # auto_delete(new_message, context)
+        return
 
-        new_user_force = round(to_user.force + new_user_force_delta, 3)
-        new_user_rep = round(to_user.reputation + new_user_rep_delta, 3)
-
-        User.update_rep_and_force(
-            from_user_id, to_user_id, new_user_rep, new_user_force
+    if ReputationUpdate.is_user_send_rep_to_message(
+        from_user_id, message.reply_to_message.message_id
+    ):
+        new_message = message.reply_text(
+            "❌ Вы уже изменяли репутацию, используя это сообщение!"
         )
+        # auto_delete(new_message, context)
+        return
 
-        ReputationUpdate(
-            message_id=message.reply_to_message.message_id,
-            from_user_id=from_user_id,
-            to_user_id=to_user_id,
-            reputation_delta=new_user_rep_delta,
-            force_delta=new_user_force_delta,
-            new_reputation=new_user_rep,
-            new_force=new_user_force,
-        ).create()
+    reputation_change = context.reputation[0]["reputation_change"]
 
-        from_username = message.from_user.first_name
-        to_username = message.reply_to_message.from_user.first_name
+    new_user_rep_delta = round(compute_rep(reputation_change, from_user.force), 5)
+    new_user_force_delta = round(
+        compute_force(reputation_change, from_user.force), 5
+    )
 
-        new_user_rep_delta = round(new_user_rep_delta, 3)
+    new_user_force = round(to_user.force + new_user_force_delta, 3)
+    new_user_rep = round(to_user.reputation + new_user_rep_delta, 3)
 
-        new_rep = (
-            "+" + str(new_user_rep_delta)
-            if new_user_rep_delta > 0
-            else str(new_user_rep_delta)
-        )
+    User.update_rep_and_force(
+        from_user_id, to_user_id, new_user_rep, new_user_force
+    )
 
-        icon = "👎" if reputation_change < 0 else "👍"
+    ReputationUpdate(
+        message_id=message.reply_to_message.message_id,
+        from_user_id=from_user_id,
+        to_user_id=to_user_id,
+        reputation_delta=new_user_rep_delta,
+        force_delta=new_user_force_delta,
+        new_reputation=new_user_rep,
+        new_force=new_user_force,
+    ).create()
 
-        logger.info(f"{from_username} has updated {to_username} reputation {new_rep}")
+    from_username = message.from_user.first_name
+    to_username = message.reply_to_message.from_user.first_name
 
-        new_message = context.bot.send_message(
-            message.chat_id,
-            f"{icon} *{from_username}* ({from_user.reputation:.3f}, {from_user.force:.3f}) "
-            f"обновил(а) вам репутацию ({new_rep})",
-            reply_to_message_id=message.reply_to_message.message_id,
-            parse_mode=ParseMode.MARKDOWN,
-        )
+    new_user_rep_delta = round(new_user_rep_delta, 3)
+
+    new_rep = (
+        f"+{str(new_user_rep_delta)}"
+        if new_user_rep_delta > 0
+        else str(new_user_rep_delta)
+    )
+
+
+    icon = "👎" if reputation_change < 0 else "👍"
+
+    logger.info(f"{from_username} has updated {to_username} reputation {new_rep}")
+
+    new_message = context.bot.send_message(
+        message.chat_id,
+        f"{icon} *{from_username}* ({from_user.reputation:.3f}, {from_user.force:.3f}) "
+        f"обновил(а) вам репутацию ({new_rep})",
+        reply_to_message_id=message.reply_to_message.message_id,
+        parse_mode=ParseMode.MARKDOWN,
+    )
         # auto_delete(new_message, context)
 
 
@@ -155,13 +159,10 @@ def show_self_rating_callback(update: Update, context: CallbackContext) -> None:
     ]
 
     new_message = update.effective_message.reply_text(
-        "{}, у вас {} рейтинга и {} очков влияния".format(
-            update.effective_message.from_user.first_name,
-            f"{user.reputation:.3f}",
-            f"{user.force:.3f}",
-        ),
+        f'{update.effective_message.from_user.first_name}, у вас {f"{user.reputation:.3f}"} рейтинга и {f"{user.force:.3f}"} очков влияния',
         reply_markup=InlineKeyboardMarkup(keyboard),
     )
+
 
     auto_delete(new_message, context, from_message=update.effective_message)
 
@@ -172,9 +173,7 @@ def show_self_rating_position_callback(
     query = update.callback_query
     user_id = int(query.data.split("#")[1])
     if update.callback_query.from_user.id == user_id:
-        rating_slice = User.get_rating_slice(user_id, 5, 5)
-
-        if rating_slice:
+        if rating_slice := User.get_rating_slice(user_id, 5, 5):
             text = get_rating_by_slice(rating_slice, user_id)
             query.edit_message_text(text=text, parse_mode=ParseMode.MARKDOWN)
             query.answer()
@@ -202,16 +201,14 @@ def about_user_callback(update: Update, context: CallbackContext) -> None:
 
     if user:
         new_message = update.effective_message.reply_text(
-            "Пользователь {} имеет {} рейтинга и {} очков влияния".format(
-                user.first_name, f"{user.reputation:.3f}", f"{user.force:.3f}"
-            )
+            f'Пользователь {user.first_name} имеет {f"{user.reputation:.3f}"} рейтинга и {f"{user.force:.3f}"} очков влияния'
         )
+
     else:
         new_message = update.effective_message.reply_text(
-            "Пользователь {} имеет 0.0 рейтинга и 0.0 очков влияния".format(
-                user.first_name
-            )
+            f"Пользователь {user.first_name} имеет 0.0 рейтинга и 0.0 очков влияния"
         )
+
 
     auto_delete(new_message, context, from_message=msg)
 
@@ -234,16 +231,18 @@ def get_logs_data(user_id):
             history[i].force_delta = round(history[i].force_delta, 3)
 
             rep_delta = (
-                "+" + str(history[i].reputation_delta)
+                f"+{str(history[i].reputation_delta)}"
                 if history[i].reputation_delta > 0
                 else str(history[i].reputation_delta)
             )
 
+
             force_delta = (
-                "+" + str(history[i].force_delta)
+                f"+{str(history[i].force_delta)}"
                 if history[i].force_delta > 0
                 else str(history[i].force_delta)
             )
+
 
             new_rep = str(round(history[i].new_reputation, 3))
 
@@ -283,10 +282,10 @@ def reputation_history_page_callback(update: Update, context: CallbackContext) -
     query = update.callback_query
     user_id = int(query.data.split("#")[2])
     query.answer()
-    page = int(query.data.split("#")[1])
     if update.callback_query.from_user.id == user_id:
         logs_data = get_logs_data(update.callback_query.from_user.id)
 
+        page = int(query.data.split("#")[1])
         paginator = InlineKeyboardPaginator(
             len(logs_data),
             current_page=page,

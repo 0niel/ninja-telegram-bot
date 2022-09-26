@@ -65,7 +65,8 @@ def daily_weather_job(context):
     context.bot.send_photo(
         chat_id=config.MIREA_NINJA_GROUP_ID,
         photo=open(
-            os.path.join(app_dir, "files", str(random.randint(0, 1500)) + ".jpg"), "rb"
+            os.path.join(app_dir, "files", f"{random.randint(0, 1500)}.jpg"),
+            "rb",
         ),
         caption=text,
         parse_mode=ParseMode.MARKDOWN_V2,

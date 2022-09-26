@@ -58,16 +58,14 @@ def yandex_weather(latitude, longitude, api_key=config.YANDEX_WEATHER_API_KEY):
         parts["condition"] = CONDITIONS[parts["condition"]]
         parts["wind_dir"] = WIND_DIR[parts["wind_dir"]]
 
-    weather = dict()
+    weather = {}
     params = ["condition", "wind_dir", "pressure_mm", "humidity"]
     for parts in yandex_json["forecast"]["parts"]:
-        weather[parts["part_name"]] = dict()
-        weather[parts["part_name"]]["temp"] = parts["temp_avg"]
+        weather[parts["part_name"]] = {"temp": parts["temp_avg"]}
         for param in params:
             weather[parts["part_name"]][param] = parts[param]
 
-    weather["fact"] = dict()
-    weather["fact"]["temp"] = yandex_json["fact"]["temp"]
+    weather["fact"] = {"temp": yandex_json["fact"]["temp"]}
     for param in params:
         weather["fact"][param] = yandex_json["fact"][param]
 
