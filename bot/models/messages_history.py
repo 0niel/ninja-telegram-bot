@@ -21,21 +21,21 @@ class MessagesHistory(BaseModel):
     @staticmethod
     def add_message(user_id, date):
         with db_session() as session:
-            messages_history = (
+            if messages_history := (
                 session.query(MessagesHistory)
                 .filter(
-                    MessagesHistory.user_id == user_id, MessagesHistory.date == date
+                    MessagesHistory.user_id == user_id,
+                    MessagesHistory.date == date,
                 )
                 .first()
-            )
-            if not messages_history:
+            ):
+                messages_history.messages = messages_history.messages + 1
+
+            else:
                 new_messages_history = MessagesHistory(
                     user_id=user_id, date=date, messages=1
                 )
                 session.add(new_messages_history)
-            else:
-                messages_history.messages = messages_history.messages + 1
-
             session.commit()
 
     @staticmethod

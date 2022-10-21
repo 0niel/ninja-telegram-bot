@@ -74,9 +74,11 @@ def show_horo_time_callback(update: Update, context: CallbackContext) -> None:
             for key, value in date_tmp.items():
                 keyboard_lines.append(
                     InlineKeyboardButton(
-                        value, callback_data=f"show_horo#{key}#{str(user_id)}#{sign}"
+                        value,
+                        callback_data=f"show_horo#{key}#{user_id}#{sign}",
                     )
                 )
+
                 i += 1
 
             if i == 2:
@@ -114,10 +116,12 @@ def show_horo_callback(update: Update, context: CallbackContext) -> None:
         keyboard = [
             [
                 InlineKeyboardButton(
-                    "<- Назад", callback_data=f"show_horo_time#{sign}#{str(user_id)}"
+                    "<- Назад",
+                    callback_data=f"show_horo_time#{sign}#{user_id}",
                 )
-            ],
+            ]
         ]
+
 
         query.edit_message_text(text=text, reply_markup=InlineKeyboardMarkup(keyboard))
         query.answer()

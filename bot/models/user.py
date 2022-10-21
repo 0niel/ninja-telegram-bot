@@ -27,9 +27,12 @@ class User(TimedBaseModel):
     @staticmethod
     def update(user_id, username, first_name, last_name):
         with db_session() as session:
-            user = session.query(User).get(user_id)
+            if user := session.query(User).get(user_id):
+                user.username = username
+                user.first_name = first_name
+                user.last_name = last_name
 
-            if not user:
+            else:
                 user = User(
                     id=user_id,
                     username=username,
@@ -37,11 +40,6 @@ class User(TimedBaseModel):
                     last_name=last_name,
                 )
                 session.add(user, username)
-            else:
-                user.username = username
-                user.first_name = first_name
-                user.last_name = last_name
-
             session.commit()
 
     @staticmethod
@@ -95,9 +93,7 @@ class User(TimedBaseModel):
     @staticmethod
     def get_rating_slice(user_id, before_count: int, after_count: int):
         with db_session() as session:
-            user = session.query(User).get(user_id)
-
-            if user:
+            if user := session.query(User).get(user_id):
                 query = session.query(
                     User,
                     func.rank().over(order_by=User.reputation.desc()).label("rank"),
@@ -107,16 +103,8 @@ class User(TimedBaseModel):
 
                 for tmp_user in users:
                     if tmp_user[0].id == user_id:
-                        if tmp_user[1] - 1 - before_count >= 0:
-                            start = tmp_user[1] - 1 - before_count
-                        else:
-                            start = 0
-
-                        if tmp_user[1] + after_count < len(users):
-                            end = tmp_user[1] + after_count
-                        else:
-                            end = len(users)
-
+                        start = max(tmp_user[1] - 1 - before_count, 0)
+                        end = min(tmp_user[1] + after_count, len(users))
                         return users[start:end]
 
 
