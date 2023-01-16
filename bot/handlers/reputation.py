@@ -60,7 +60,7 @@ async def on_reputation_change(update: Update, context: ContextTypes.DEFAULT_TYP
         # auto_delete(new_message, context)
         return
 
-    if ReputationUpdate.is_user_send_rep_to_message(from_user_id, message.reply_to_message.message_id):
+    if await reputation_update.is_user_send_rep_to_message(from_user_id, message.reply_to_message.message_id):
         new_message = await message.reply_text("❌ Вы уже изменяли репутацию, используя это сообщение!")
         # auto_delete(new_message, context)
         return
@@ -118,9 +118,7 @@ async def show_leaders(update: Update, context: CallbackContext):
 
 async def show_self_rating(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_message.from_user.id
-    print(user_id)
     user = await user_service.get_by_id(user_id)
-    print(user)
 
     keyboard = [
         [InlineKeyboardButton("Показать позицию в рейтинге", callback_data=f"show_pos#{str(user_id)}")],
@@ -139,7 +137,7 @@ async def show_self_rating_position(update: Update, context: ContextTypes.DEFAUL
     query = update.callback_query
     user_id = int(query.data.split("#")[1])
     if update.callback_query.from_user.id == user_id:
-        if rating_slice := await user_service.get_rating_slice(user_id, 5, 5):
+        if rating_slice := await user_service.get_rating_slice(user_id, 5, 5):  # type: list[tuple["User", int]]
             text = get_rating_by_slice(rating_slice, user_id)
             await query.edit_message_text(text=text, parse_mode=ParseMode.MARKDOWN)
             await query.answer()
@@ -154,7 +152,7 @@ async def about_user_callback(update: Update, context: ContextTypes.DEFAULT_TYPE
 
     if msg.reply_to_message:
         from_user_id = msg.reply_to_message.from_user.id
-        user = user_service.get_by_id(from_user_id)
+        user = await user_service.get_by_id(from_user_id)
     elif HasUserInArgsFilter().filter(msg):
         username = context.args[0].replace("@", "").strip()
         user = await user_service.get_by_username(username)

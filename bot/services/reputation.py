@@ -80,7 +80,7 @@ def get_rating(users: List[User]) -> str:
     return "*Рейтинг:*\n\n" + escape_markdown("\n".join(lines))
 
 
-def get_rating_by_slice(users_slice, user_id) -> str:
+def get_rating_by_slice(users_slice: list[tuple["User", int]], user_id: int) -> str:
     lines = []
 
     if users_slice[0][1] != 1:

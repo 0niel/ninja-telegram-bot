@@ -69,7 +69,7 @@ async def get_top_by_reputation(limit: int):
         (await db.execute(select(User).order_by(User.reputation.desc()).limit(limit))).scalars().all()
 
 
-async def get_rating_slice(user_id, before_count: int, after_count: int):
+async def get_rating_slice(user_id, before_count: int, after_count: int) -> list[User]:
     """Get slice of users rating. It's used to show user rating in rating command.  For example, if user has 1000
     rating, and before_count=5 and after_count=5, this function will return 10 users (5 before and 5 after user).
     This function also returns user position in rating"""
@@ -78,12 +78,10 @@ async def get_rating_slice(user_id, before_count: int, after_count: int):
 
         res = []  # type: list[tuple[User, int]] # (user, rank)
 
-        for index, user in enumerate(users_without_zero_force):
+        for rank, user in enumerate(users_without_zero_force, start=1):
             if user.id == user_id:
-                start = max(index - 1 - before_count, 0)
-                end = min(index + after_count, len(users_without_zero_force))
-                res = users_without_zero_force[start:end]
-
-                break
+                user_position = rank
+            if user_position - before_count <= rank <= user_position + after_count:
+                res.append((user, rank))
 
         return res
