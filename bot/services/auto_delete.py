@@ -12,16 +12,19 @@ async def edit_message_repeating_callback(context: ContextTypes.DEFAULT_TYPE) ->
     message: Message = context.job.data["message"]
     time_to_delete: int = context.job.data["time_to_delete"]
 
+    if message.reply_markup:
+        return
+
     if time_left := re.search(r"\d+", message.text):
         time_left = int(time_left[0])
         message = await message.edit_text(
             message.text.replace(
                 DELETE_MESSAGE_TEMPLATE.format(seconds=time_left), DELETE_MESSAGE_TEMPLATE.format(seconds=time_left - 5)
-            )
+            ),
         )
     else:
         message = await message.edit_text(
-            message.text + "\n\n" + DELETE_MESSAGE_TEMPLATE.format(seconds=time_to_delete)
+            message.text + "\n\n" + DELETE_MESSAGE_TEMPLATE.format(seconds=time_to_delete),
         )
 
     context.job.data["message"] = message
