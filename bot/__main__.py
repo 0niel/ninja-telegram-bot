@@ -52,7 +52,7 @@ def setup() -> None:
     handlers.setup()
 
     # Register the error handler
-    application.add_error_handler(error_handler)
+    # application.add_error_handler(error_handler)
 
     # Setup daily notification job
     daily_job.setup(application.job_queue)

@@ -66,7 +66,7 @@ def is_rep_change_available(user: User, cooldown_seconds: int) -> bool:
 async def get_top_by_reputation(limit: int):
     """Get top users by reputation"""
     async with session() as db:
-        (await db.execute(select(User).order_by(User.reputation.desc()).limit(limit))).scalars().all()
+        return (await db.execute(select(User).order_by(User.reputation.desc()).limit(limit))).scalars().all()
 
 
 async def get_rating_slice(user_id, before_count: int, after_count: int) -> list[User]:
