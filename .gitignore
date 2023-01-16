@@ -13,3 +13,4 @@ jsons/
 __pycache__/
 db_data/
 /config/
+.env

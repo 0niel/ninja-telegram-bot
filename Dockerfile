@@ -1,18 +1,24 @@
-FROM python:3.9-slim-buster AS builder
-RUN mkdir /app
+FROM python:3.11-alpine
 
-WORKDIR /app
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
 
-COPY requirements.txt .
+WORKDIR /app/
 
-RUN pip install --upgrade pip \
-  && pip install --upgrade setuptools \
-  && pip install -r requirements.txt
+ENV POETRY_HOME="/opt/poetry" \
+    POETRY_NO_INTERACTION=1 \
+    POETRY_VERSION=1.3.2 \
+    POETRY_VIRTUALENVS_CREATE=false
 
-COPY bot /app/bot
+# Install Poetry using pip
+RUN pip install "poetry==$POETRY_VERSION"
 
-RUN mkdir /usr/local/share/fonts/
+# Copy poetry.lock* in case it doesn't exist in the repo
+COPY pyproject.toml poetry.lock* /app/
 
-ADD /files /app/files
+# Install dependencies
+RUN poetry install --no-dev --no-root --no-interaction
 
-CMD python -m bot
+COPY . /app/
+
+CMD ["python", "-m", "bot"]

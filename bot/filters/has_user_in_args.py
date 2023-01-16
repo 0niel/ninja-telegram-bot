@@ -1,6 +1,6 @@
 import re
 
-from telegram.ext import MessageFilter
+from telegram.ext.filters import MessageFilter
 
 
 class HasUserInArgsFilter(MessageFilter):

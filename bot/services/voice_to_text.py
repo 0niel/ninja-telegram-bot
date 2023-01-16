@@ -55,7 +55,7 @@ def gen(audio_file_name):
 
 
 def run(
-    audio_file_name, folder_id=config.YANDEX_FOLDER_ID, api_key=config.YANDEX_API_KEY
+    audio_file_name, folder_id=config.get_settings().YANDEX_FOLDER_ID, api_key=config.get_settings().YANDEX_API_KEY
 ):
     # Establish a connection with the server
     cred = grpc.ssl_channel_credentials()
@@ -81,9 +81,7 @@ def run(
             if event_type == "final":
                 alternatives = [a.text for a in r.final.alternatives]
             if event_type == "final_refinement":
-                alternatives = [
-                    a.text for a in r.final_refinement.normalized_text.alternatives
-                ]
+                alternatives = [a.text for a in r.final_refinement.normalized_text.alternatives]
                 return alternatives[0]
     except grpc._channel._Rendezvous as err:
         print(f"Error code {err._state.code}, message: {err._state.details}")

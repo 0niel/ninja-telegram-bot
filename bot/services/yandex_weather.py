@@ -1,6 +1,6 @@
 import json
 
-import requests
+import httpx
 
 from bot import config
 
@@ -39,19 +39,20 @@ WIND_DIR = {
 }
 
 
-def yandex_weather(latitude, longitude, api_key=config.YANDEX_WEATHER_API_KEY):
+async def yandex_weather(latitude, longitude, api_key=config.get_settings().YANDEX_API_KEY):
     url_yandex = f"https://api.weather.yandex.ru/v2/informers?lat={latitude}&lon={longitude}&[lang=ru_RU]"
-    print(url_yandex)
-    yandex_req = requests.get(
-        url_yandex,
-        headers={
-            "X-Yandex-API-Key": api_key,
-            "Content-type": "application/json",
-            "Access-Control-Allow-Origin": "*",
-        },
-    )
 
-    yandex_json = json.loads(yandex_req.text)
+    headers = {
+        "X-Yandex-API-Key": api_key,
+        "Content-type": "application/json",
+        "Access-Control-Allow-Origin": "*",
+    }
+
+    async with httpx.AsyncClient() as client:
+        response = await client.get(url_yandex, headers=headers)
+        response.raise_for_status()
+        yandex_json = json.loads(response.text)
+
     yandex_json["fact"]["condition"] = CONDITIONS[yandex_json["fact"]["condition"]]
     yandex_json["fact"]["wind_dir"] = WIND_DIR[yandex_json["fact"]["wind_dir"]]
     for parts in yandex_json["forecast"]["parts"]:
@@ -74,7 +75,7 @@ def yandex_weather(latitude, longitude, api_key=config.YANDEX_WEATHER_API_KEY):
     return weather
 
 
-def get_weather_text(dict_weather_yandex):
+def format_weather_text(dict_weather_yandex):
     day = {
         "night": "ночью",
         "morning": "утром",
@@ -93,14 +94,11 @@ def get_weather_text(dict_weather_yandex):
                 if dict_weather_yandex[i]["temp"] > 0
                 else str(dict_weather_yandex[i]["temp"])
             )
-            message += (
-                f"Температура {time_day} {temp}, "
-                f'{dict_weather_yandex[i]["condition"]}\n',
-            )[0]
+            message += (f"Температура {time_day} {temp}, " f'{dict_weather_yandex[i]["condition"]}\n',)[0]
 
     return message
 
 
-def get_moscow_weather_text():
-    weather = yandex_weather(55.75396, 37.620393)
-    return get_weather_text(weather)
+async def get_moscow_weather_text():
+    weather = await yandex_weather(55.75396, 37.620393)  # Moscow
+    return format_weather_text(weather)

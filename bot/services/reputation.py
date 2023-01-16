@@ -1,7 +1,7 @@
 import math
 from typing import List
 
-from telegram.utils.helpers import escape_markdown
+from telegram.helpers import escape_markdown
 
 from bot.models.user import User
 
@@ -20,16 +20,14 @@ def compute_force(rep, force) -> float:
     if i_count_range == 0:
         i_count_range = 1
 
-    if force > 50 and force < 200:
+    if 50 < force < 200:
         force_new = force / 70
     elif force >= 200:
         force_new = force / 10
     else:
         force_new = force / 100
 
-    delta = i_min_size + (math.log(force_new + 1) - i_min_count) * (
-        size_range / i_count_range
-    )
+    delta = i_min_size + (math.log(force_new + 1) - i_min_count) * (size_range / i_count_range)
 
     new_force_delta = rep * delta
     new_force_delta = max(new_force_delta, 0)
@@ -51,16 +49,14 @@ def compute_rep(rep, force) -> float:
     if i_count_range == 0:
         i_count_range = 1
 
-    if force > 50 and force < 200:
+    if 50 < force < 200:
         force_new = force / 20
     elif force >= 200:
         force_new = force / 10
     else:
         force_new = force / 50
 
-    delta = i_min_size + (math.log(force_new + 1) - i_min_count) * (
-        size_range / i_count_range
-    )
+    delta = i_min_size + (math.log(force_new + 1) - i_min_count) * (size_range / i_count_range)
 
     return rep * delta
 
@@ -81,7 +77,6 @@ def get_rating(users: List[User]) -> str:
             f'{str(i + 1)}. {f"{users[i].first_name} " + (users[i].last_name if users[i].last_name is not None else "")} - {reputation if users[i].reputation >= 0 else f"({reputation})"} репутации и {force} влияния {medal}'
         )
 
-
     return "*Рейтинг:*\n\n" + escape_markdown("\n".join(lines))
 
 
@@ -95,9 +90,8 @@ def get_rating_by_slice(users_slice, user_id) -> str:
         force = f"{user[0].force:.3f}"
         reputation = f"{user[0].reputation:.3f}"
         line = escape_markdown(
-            f'{str(user[1])}. {f"{user[0].first_name} " + (user[0].last_name if user[0].last_name is not None else "")} - {reputation if user[0].reputation >= 0 else f"({reputation})"} репутации и {force} влияния'
+            f'{str(user[1])}. {f"{user[0].first_name} " + (user[0].last_name if user[0].last_name is not None else "")} - {reputation if user[0].reputation >= 0 else f"({reputation})"} репутации и {force} влияния '
         )
-
 
         if user[0].id == user_id:
             line = f"*{line}*"

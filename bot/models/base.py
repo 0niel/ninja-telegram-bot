@@ -2,10 +2,10 @@ import datetime
 
 from sqlalchemy import Column, DateTime, func
 
-from bot import db
+from bot.db import Base
 
 
-class BaseModel(db.base):
+class BaseModel(Base):
     __abstract__ = True
 
 
