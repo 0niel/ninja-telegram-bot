@@ -1,4 +1,4 @@
-from telegram.ext import MessageFilter
+from telegram.ext.filters import MessageFilter
 
 
 class IsUserReplyToUser(MessageFilter):

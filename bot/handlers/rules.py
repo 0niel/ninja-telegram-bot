@@ -1,8 +1,7 @@
-from telegram import ParseMode, Update
-from telegram.ext import CallbackContext, CommandHandler
-from telegram.utils.helpers import escape_markdown
+from telegram import Update
+from telegram.ext import CommandHandler, ContextTypes
 
-from bot import dispatcher
+from bot import application
 from bot.services.auto_delete import auto_delete
 
 RULES_TEXT = (
@@ -13,20 +12,20 @@ RULES_TEXT = (
     "ней действуют те же правила, что и на форуме, но с некоторыми поправками на эфемерность:"
     "\n\n"
     "1. 😈 Можно материться. Обзываться и переходить на личности - нельзя.\n"
-    "2. 👺 Анонимность != вседозволенность. Мы рекомендуем не подрывать учебный процесс и не нарушать законы РФ, используя этот чат.\n"
+    "2. 👺 Анонимность != вседозволенность. Мы <i>рекомендуем</i> не подрывать учебный процесс и не нарушать законы РФ,"
+    " используя этот чат.\n"
     "3. 👋 С новыми участниками у нас принято общаться на «ты» и относиться к ним как к друзьям. Будьте вежливы.\n"
     "4. 🤝 Прося что-то, давайте что-то взамен. Если вам помогли, не забудьте поставить +реп.\n"
     "5. 🚪 Это частная вечеринка. Если вы очень душный — вас выставляют за дверь. Тут нет демократии."
 )
 
 
-def rules_callback(update: Update, context: CallbackContext) -> None:
-    message = update.effective_message.reply_text(
-        escape_markdown(RULES_TEXT, version=2).replace("рекомендуем", "_рекомендуем_"),
-        parse_mode=ParseMode.MARKDOWN_V2,
+async def rules(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    message = await update.effective_message.reply_html(
+        RULES_TEXT,
     )
     auto_delete(message, context, from_message=update.effective_message)
 
 
 # show chat rules
-dispatcher.add_handler(CommandHandler("rules", rules_callback), group=5)
+application.add_handler(CommandHandler("rules", rules))

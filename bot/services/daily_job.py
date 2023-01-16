@@ -1,75 +1,56 @@
 import datetime
-import os
 import random
-from pathlib import Path
 
 import pytz
-from telegram import ParseMode
-from telegram.ext import JobQueue
-from telegram.utils.helpers import escape_markdown
+from telegram.constants import ParseMode
+from telegram.ext import ContextTypes, JobQueue
 
-from bot import config
+from bot import config, timezone_offset
 from bot.models.messages_history import MessagesHistory
-from bot.models.user import User
-from bot.services.yandex_weather import get_moscow_weather_text
+from bot.services import user as user_service
 from bot.utils.plural_forms import get_plural_forms
-
-offset = datetime.timezone(datetime.timedelta(hours=3))
 
 NEW_FORCES = {0: 1.2, 1: 1, 2: 0.8, 3: 0.8, 4: 0.8}
 
 
-def daily_job(context):
-    top_by_messages = MessagesHistory.get(datetime.datetime.now(offset).date())
+async def daily_job(context: ContextTypes.DEFAULT_TYPE):
+    top_by_messages = MessagesHistory.get(datetime.datetime.now(timezone_offset).date())
 
-    text = "👑 Итоги дня\! Самые активные пользователи получают дополнительные очки влияния\.\n\n"
+    text = "👑 Итоги дня! Самые активные пользователи получают дополнительные очки влияния.\n\n"
 
     for i in range(len(top_by_messages)):
-        chat_member = context.bot.get_chat_member(
-            config.MIREA_NINJA_GROUP_ID, top_by_messages[i].user_id
+        chat_member = await context.bot.get_chat_member(
+            config.get_settings().MIREA_NINJA_GROUP_ID, top_by_messages[i].user_id
         ).user
 
-        user = User.get(top_by_messages[i].user_id)
-
-        if user is None:
-            User.update(
-                chat_member.id,
-                chat_member.username,
-                chat_member.first_name,
-                chat_member.last_name,
-            )
-            user = User.get(top_by_messages[i].user_id)
+        user = await user_service.get_by_id(top_by_messages[i].user_id)
 
         new_force = NEW_FORCES[i]
 
-        User.update_force(user.id, user.force + new_force)
+        await user_service.update_force(user.id, user.force + new_force)
 
-        suffix = ["собщение", "сообщения", "собщений"][
-            get_plural_forms(top_by_messages[i].messages)
-        ]
+        suffix = ["сообщение", "сообщения", "сообщений"][get_plural_forms(top_by_messages[i].messages)]
 
-        text += f"*{top_by_messages[i].messages}* {suffix} от {chat_member.first_name}, _\+{escape_markdown(str(new_force), version=2)} влияния_\n"
+        text += (
+            f"<b>{top_by_messages[i].messages}</b> {suffix} от {chat_member.first_name}, "
+            f"<i>+{new_force} влияния</i>\n"
+        )
 
-    context.bot.send_message(
-        chat_id=config.MIREA_NINJA_GROUP_ID, text=text, parse_mode=ParseMode.MARKDOWN_V2
+    await context.bot.send_message(
+        chat_id=config.get_settings().MIREA_NINJA_GROUP_ID, text=text, parse_mode=ParseMode.HTML
     )
 
 
-def daily_weather_job(context):
-    app_dir: Path = Path(__file__).parent.parent.parent
+async def daily_weather_job(context: ContextTypes.DEFAULT_TYPE):
+    text = "Доброе утро!\n\n" "<b>Погода на сегодня:</b>\n"
 
-    text = "Доброе утро\!\n\n*Погода на сегодня:*\n" + escape_markdown(
-        get_moscow_weather_text(), version=2
-    )
+    images_url = "https://raw.githubusercontent.com/0niel/happy-new-day/main/images/{}.jpg"
 
-    context.bot.send_photo(
-        chat_id=config.MIREA_NINJA_GROUP_ID,
-        photo=open(
-            os.path.join(app_dir, "files", f"{random.randint(0, 1500)}.jpg"),
-            "rb",
-        ),
+    await context.bot.send_photo(
+        chat_id=config.get_settings().MIREA_NINJA_GROUP_ID,
+        photo=images_url.format(random.randint(1, 1500)),
         caption=text,
-        parse_mode=ParseMode.MARKDOWN_V2,
+        parse_mode=ParseMode.HTML,
     )
 
 

@@ -1,21 +1,20 @@
 import logging
+
+from datetime import timedelta, timezone
 from pathlib import Path
 
-from telegram.ext import Updater
+from telegram.ext import Application
 
 from . import config
 
 # Enable logging
-logging.basicConfig(
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
-)
-
+logging.basicConfig(format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO)
 logger = logging.getLogger(__name__)
+
 
 app_dir: Path = Path(__file__).parent.parent
 
-# Create the Updater and pass it your bot's token.
-updater = Updater(config.TELEGRAM_TOKEN, use_context=True)
+timezone_offset = timezone(timedelta(hours=3))
 
-# Get the dispatcher to register handlers
-dispatcher = updater.dispatcher
+# Create the Application and pass it bot's token.
+application = Application.builder().token(config.get_settings().TELEGRAM_TOKEN).build()

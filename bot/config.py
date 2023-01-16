@@ -1,10 +1,48 @@
-from envparse import env
+from functools import lru_cache
+from typing import Optional
 
-TELEGRAM_TOKEN = env.str("TELEGRAM_TOKEN", default="")
-SENTRY_URL = env.str("SENTRY_URL", default="")
-POSTGRES_URI = env.str(
-    "POSTGRES_URI", default="postgres://postgres:oniel@localhost/postgres")
-MIREA_NINJA_GROUP_ID = env.int("MIREA_NINJA_GROUP_ID", default=-567317308)
-YANDEX_API_KEY = env.str("YANDEX_API_KEY", default="")
-YANDEX_WEATHER_API_KEY = env.str("YANDEX_WEATHER_API_KEY", default="")
-YANDEX_FOLDER_ID = env.str("YANDEX_FOLDER_ID", default="")
+from pydantic import BaseSettings, Field, PostgresDsn, SecretStr, validator
+
+
+class AsyncPostgresDsn(PostgresDsn):
+    allowed_schemes = {"postgres+asyncpg", "postgresql+asyncpg"}
+
+
+class Config(BaseSettings):
+    TELEGRAM_TOKEN: str
+
+    # Postgres
+    POSTGRES_SERVER: str
+    POSTGRES_USER: str
+    POSTGRES_PASSWORD: SecretStr
+    POSTGRES_DB: str
+
+    POSTGRES_URI: Optional[AsyncPostgresDsn]
+
+    @validator("POSTGRES_URI", pre=True)
+    def assemble_db_connection(cls, v, values):
+        if isinstance(v, str):
+            return v
+        return AsyncPostgresDsn.build(
+            scheme="postgresql+asyncpg",
+            user=values.get("POSTGRES_USER"),
+            password=values.get("POSTGRES_PASSWORD").get_secret_value(),
+            host=values.get("POSTGRES_SERVER"),
+            path=f"/{values.get('POSTGRES_DB') or ''}",
+        )
+
+    MIREA_NINJA_GROUP_ID: int = Field(default=-567317308, env="MIREA_NINJA_GROUP_ID")
+
+    # Yandex
+    YANDEX_API_KEY: SecretStr
+    YANDEX_WEATHER_API_KEY: SecretStr
+    YANDEX_FOLDER_ID: str
+
+    class Config:
+        env_file = ".env"
+        env_file_encoding = "utf-8"
+
+
+@lru_cache()
+def get_settings():
+    return Config()

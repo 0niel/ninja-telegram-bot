@@ -1,30 +1,23 @@
-import logging
-from contextlib import contextmanager
+from typing import AsyncGenerator
 
-from sqlalchemy import create_engine
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import scoped_session, sessionmaker
+from sqlalchemy.orm import sessionmaker
 
-from bot import config
+from bot.config import get_settings
 
-logger = logging.getLogger(__name__)
+engine = create_async_engine(get_settings().POSTGRES_URI, future=True)
 
-engine = create_engine(
-    config.POSTGRES_URI, client_encoding="utf8", isolation_level="AUTOCOMMIT"
+Base = declarative_base()
+
+session = sessionmaker(
+    engine,
+    expire_on_commit=False,
+    class_=AsyncSession,
 )
-base = declarative_base()
-base.metadata.bind = engine
-base.metadata.create_all(engine)
 
 
-@contextmanager
-def db_session():
-    session = scoped_session(sessionmaker(bind=engine, expire_on_commit=False))
-    try:
-        yield session
-    except:
-        logger.error("An error has occured in runtime SQL query.")
-        session.rollback()
-        raise
-    finally:
-        session.close()
+# Dependency
+async def get_session() -> AsyncGenerator[AsyncSession, None]:
+    async with session as db:
+        yield db
