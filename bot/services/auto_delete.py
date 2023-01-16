@@ -49,7 +49,7 @@ def auto_delete(
 
         context.job_queue.run_once(
             delete_message_callback,
-            delete_after,
+            delete_after + 5,
             name=f"delete_message_callback_{message.message_id}",
             data=message,
         )
@@ -57,7 +57,7 @@ def auto_delete(
         if from_message:
             context.job_queue.run_once(
                 delete_message_callback,
-                delete_after,
+                delete_after + 5,
                 name=f"delete_message_callback_{from_message.message_id}",
                 data=from_message,
             )
