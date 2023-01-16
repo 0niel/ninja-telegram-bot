@@ -11,6 +11,8 @@ class AsyncPostgresDsn(PostgresDsn):
 class Config(BaseSettings):
     TELEGRAM_TOKEN: str
 
+    RUN_WITH_WEBHOOK: bool = Field(default=False)
+
     # Host for webhook and webserver. Should be accessible from the Internet for Telegram to work.
     HOST: str = "https://bot.mirea.ninja"
     PORT: int = 8000

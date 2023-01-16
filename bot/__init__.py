@@ -17,5 +17,8 @@ app_dir: Path = Path(__file__).parent.parent
 timezone_offset = timezone(timedelta(hours=3))
 
 # Create the Application and pass it bot's token.
-application = Application.builder().token(config.get_settings().TELEGRAM_TOKEN).updater(None).build()
-web_app = FastAPI()
+if config.get_settings().RUN_WITH_WEBHOOK:
+    application = Application.builder().token(config.get_settings().TELEGRAM_TOKEN).updater(None).build()
+    web_app = FastAPI()
+else:
+    application = Application.builder().token(config.get_settings().TELEGRAM_TOKEN).build()
