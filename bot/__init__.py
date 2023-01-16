@@ -1,8 +1,8 @@
 import logging
-
 from datetime import timedelta, timezone
 from pathlib import Path
 
+from fastapi import FastAPI
 from telegram.ext import Application
 
 from . import config
@@ -17,4 +17,5 @@ app_dir: Path = Path(__file__).parent.parent
 timezone_offset = timezone(timedelta(hours=3))
 
 # Create the Application and pass it bot's token.
-application = Application.builder().token(config.get_settings().TELEGRAM_TOKEN).build()
+application = Application.builder().token(config.get_settings().TELEGRAM_TOKEN).updater(None).build()
+web_app = FastAPI()

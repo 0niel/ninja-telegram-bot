@@ -1,13 +1,17 @@
+import asyncio
 import html
 import json
 import logging
 import traceback
 
+import uvicorn
+from fastapi.requests import Request
+from fastapi.responses import JSONResponse, Response
 from telegram import Update
 from telegram.constants import ParseMode
 from telegram.ext import ContextTypes
 
-from bot import config, handlers
+from bot import config, handlers, web_app
 from bot.services import daily_job
 
 from . import application
@@ -44,8 +48,23 @@ async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE) -> N
     )
 
 
-def main() -> None:
+async def telegram(request: Request):
+    """Handle incoming Telegram updates by putting them into the `update_queue`"""
+    await application.update_queue.put(Update.de_json(data=await request.json(), bot=application.bot))
+    return Response(status_code=200)
+
+
+async def health(request: Request):
+    return JSONResponse({"status": "ok"})
+
+
+async def main() -> None:
     """Start the bot."""
+    await application.bot.set_webhook(url=f"{config.get_settings().HOST}/telegram")
+
+    # Set up webserver
+    web_app.add_route("/telegram", telegram, methods=["POST"])
+    web_app.add_route("/health", health, methods=["GET"])
 
     # Setup command and message handlers
     handlers.setup()
@@ -56,9 +75,14 @@ def main() -> None:
     # Setup daily notification job
     daily_job.setup(application.job_queue)
 
-    # Run the bot until the user presses Ctrl-C
-    application.run_polling()
+    server = uvicorn.Server(config=uvicorn.Config(web_app, host="0.0.0.0", port=config.get_settings().PORT))
+
+    # Run the bot
+    async with application:
+        await application.start()
+        await server.serve()
+        await application.idle()
 
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())

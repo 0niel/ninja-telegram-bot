@@ -23,6 +23,8 @@ asyncpg = "^0.27.0"
 python-telegram-bot = {extras = ["job-queue"], version = "^20.0"}
 alembic = "^1.9.2"
 httpx = "^0.23.3"
+fastapi = "^0.89.1"
+uvicorn = "^0.20.0"
 
 [tool.poetry.dev-dependencies]
 mypy = "^0.942"
