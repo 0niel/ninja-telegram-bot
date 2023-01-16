@@ -6,7 +6,7 @@ from telegram.constants import ParseMode
 from telegram.ext import ContextTypes, JobQueue
 
 from bot import config, timezone_offset
-from bot.models.messages_history import MessagesHistory
+from bot.services import messages_history
 from bot.services import user as user_service
 from bot.utils.plural_forms import get_plural_forms
 
@@ -14,7 +14,7 @@ NEW_FORCES = {0: 1.2, 1: 1, 2: 0.8, 3: 0.8, 4: 0.8}
 
 
 async def daily_job(context: ContextTypes.DEFAULT_TYPE):
-    top_by_messages = MessagesHistory.get(datetime.datetime.now(timezone_offset).date())
+    top_by_messages = await messages_history.get_top_by_date(datetime.datetime.now(timezone_offset).date())
 
     text = "👑 Итоги дня! Самые активные пользователи получают дополнительные очки влияния.\n\n"
 
