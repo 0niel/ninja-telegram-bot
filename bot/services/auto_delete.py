@@ -15,8 +15,8 @@ async def edit_message_repeating_callback(context: ContextTypes.DEFAULT_TYPE) ->
     if message.reply_markup:
         return
 
-    if time_left := re.search(r"\d+", message.text):
-        time_left = int(time_left[0])
+    if time_left := re.search(DELETE_MESSAGE_TEMPLATE.format(seconds=r"(?P<seconds>\d+)"), message.text):
+        time_left = int(time_left["seconds"])
         message = await message.edit_text(
             message.text.replace(
                 DELETE_MESSAGE_TEMPLATE.format(seconds=time_left), DELETE_MESSAGE_TEMPLATE.format(seconds=time_left - 5)
