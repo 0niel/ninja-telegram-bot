@@ -3,8 +3,7 @@ from fastapi.requests import Request
 from fastapi.responses import JSONResponse, Response
 from telegram import Update
 
-from bot import config, handlers
-from bot.services import daily_job
+from bot import config
 
 from . import application
 
