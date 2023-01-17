@@ -52,5 +52,5 @@ application.add_handler(
         filters.ALL & IsChatAllowedFilter(),
         users_updater,
     ),
-    group=2,
+    group=5,
 )

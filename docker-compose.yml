@@ -1,0 +1,59 @@
+version: '3.9'
+
+services:
+  nginx-proxy:
+    image: jwilder/nginx-proxy
+    container_name: nginx-proxy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - conf:/etc/nginx/conf.d
+      - vhost:/etc/nginx/vhost.d
+      - dhparam:/etc/nginx/dhparam
+      - certs:/etc/nginx/certs:ro
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+      - /usr/share/nginx/html
+      - acme:/etc/acme.sh
+    networks:
+      - proxy
+    restart: always
+
+  letsencrypt:
+    image: nginxproxy/acme-companion:latest
+    container_name: nginx-proxy-le
+    volumes_from:
+      - nginx-proxy
+    volumes:
+      - certs:/etc/nginx/certs:rw
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - acme:/etc/acme.sh
+    restart: always
+
+  bot:
+    hostname: bot
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      VIRTUAL_HOST: ${HOST}
+      LETSENCRYPT_HOST: ${HOST}
+      VIRTUAL_PORT: ${PORT}
+    networks:
+      - proxy
+
+
+volumes:
+  conf:
+  vhost:
+  dhparam:
+  certs:
+  acme:
+
+
+networks:
+  proxy:
+    external:
+      name: nginx-proxy

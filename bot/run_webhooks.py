@@ -6,6 +6,7 @@ from telegram import Update
 from bot import config
 
 from . import application
+from .handlers.authorization import auth_redirect_callback
 
 if config.get_settings().RUN_WITH_WEBHOOK:
     from . import web_app
@@ -24,11 +25,12 @@ async def health(request: Request):
 async def run() -> None:
     """Start the bot."""
     if config.get_settings().RUN_WITH_WEBHOOK:
-        await application.bot.set_webhook(url=f"{config.get_settings().HOST}/telegram")
+        await application.bot.set_webhook(url=f"{config.get_settings().BOT_URL}/telegram")
 
         # Set up webserver
         web_app.add_route("/telegram", telegram, methods=["POST"])
         web_app.add_route("/health", health, methods=["GET"])
+        web_app.add_route("/auth", auth_redirect_callback, methods=["GET"])
 
     # Run the bot
     if config.get_settings().RUN_WITH_WEBHOOK:

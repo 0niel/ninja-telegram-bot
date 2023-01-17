@@ -6,8 +6,8 @@ from sqlalchemy import pool
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import AsyncEngine
 
-from bot.config import get_settings
 from bot.models import *
+from bot.config import get_settings
 from bot.db import Base
 
 from alembic import context

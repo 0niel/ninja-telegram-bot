@@ -1,7 +1,7 @@
 from functools import lru_cache
 from typing import Optional
 
-from pydantic import BaseSettings, Field, PostgresDsn, SecretStr, validator
+from pydantic import AnyHttpUrl, BaseSettings, Field, PostgresDsn, SecretStr, validator
 
 
 class AsyncPostgresDsn(PostgresDsn):
@@ -20,7 +20,8 @@ class Config(BaseSettings):
     RUN_WITH_WEBHOOK: bool = Field(default=False)
 
     # Host for webhook and webserver. Should be accessible from the Internet for Telegram to work.
-    HOST: str = "https://bot.mirea.ninja"
+    BOT_URL: str = "https://bot.mirea.ninja"
+    HOST: str = "bot.mirea.ninja"
     PORT: int = 8000
 
     # Postgres
@@ -43,18 +44,20 @@ class Config(BaseSettings):
             path=f"/{values.get('POSTGRES_DB') or ''}",
         )
 
-    ALLOWED_CHATS: Optional[list[int]] = Field(default_factory=_parse_allowed_chats)
+    ALLOWED_CHATS: Optional[list[int]]
 
     @validator("ALLOWED_CHATS", pre=True)
     def parse_allowed_chats(cls, v):
-        if isinstance(v, list):
-            return v
-        return _parse_allowed_chats(v)
+        return v if isinstance(v, list) else _parse_allowed_chats(v)
 
     # Yandex
-    YANDEX_API_KEY: SecretStr
-    YANDEX_WEATHER_API_KEY: SecretStr
+    YANDEX_API_KEY: str
+    YANDEX_WEATHER_API_KEY: str
     YANDEX_FOLDER_ID: str
+
+    # Discourse
+    DISCOURSE_API_KEY: str
+    DISCOURSE_URL: AnyHttpUrl
 
     class Config:
         env_file = ".env"
