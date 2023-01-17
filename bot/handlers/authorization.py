@@ -86,9 +86,11 @@ async def auth(update: Update, context: CallbackContext) -> None:
             "Обратитесь к администратору для подробностей.",
         )
         return
+
     if update.effective_chat.type != ChatType.PRIVATE:
         msg = await update.effective_message.reply_text("❌ Аутентификация доступна только в личных сообщениях бота.")
         auto_delete(msg, context, from_message=update.effective_message)
+        return
 
     user = await user_service.get_by_id(update.effective_user.id)
 
