@@ -41,6 +41,8 @@ services:
       VIRTUAL_HOST: ${HOST}
       LETSENCRYPT_HOST: ${HOST}
       VIRTUAL_PORT: ${PORT}
+    networks:
+      - proxy
 
 
 volumes:
