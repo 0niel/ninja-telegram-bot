@@ -20,7 +20,7 @@ async def daily_job(context: ContextTypes.DEFAULT_TYPE):
 
     for i in range(len(top_by_messages)):
         chat_member = await context.bot.get_chat_member(
-            config.get_settings().MIREA_NINJA_GROUP_ID, top_by_messages[i].user_id
+            config.get_settings().ALLOWED_CHATS, top_by_messages[i].user_id
         ).user
 
         user = await user_service.get_by_id(top_by_messages[i].user_id)
@@ -36,9 +36,7 @@ async def daily_job(context: ContextTypes.DEFAULT_TYPE):
             f"<i>+{new_force} влияния</i>\n"
         )
 
-    await context.bot.send_message(
-        chat_id=config.get_settings().MIREA_NINJA_GROUP_ID, text=text, parse_mode=ParseMode.HTML
-    )
+    await context.bot.send_message(chat_id=config.get_settings().ALLOWED_CHATS, text=text, parse_mode=ParseMode.HTML)
 
 
 async def daily_weather_job(context: ContextTypes.DEFAULT_TYPE):
@@ -47,7 +45,7 @@ async def daily_weather_job(context: ContextTypes.DEFAULT_TYPE):
     images_url = "https://raw.githubusercontent.com/0niel/happy-new-day/main/images/{}.jpg"
 
     await context.bot.send_photo(
-        chat_id=config.get_settings().MIREA_NINJA_GROUP_ID,
+        chat_id=config.get_settings().ALLOWED_CHATS,
         photo=images_url.format(random.randint(1, 1500)),
         caption=text,
         parse_mode=ParseMode.HTML,

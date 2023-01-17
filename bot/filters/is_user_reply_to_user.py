@@ -1,7 +1,7 @@
 from telegram.ext.filters import MessageFilter
 
 
-class IsUserReplyToUser(MessageFilter):
+class IsUserReplyToUserFilter(MessageFilter):
     name = "is_user_reply_to_user"
 
     def filter(self, message):

@@ -5,7 +5,8 @@ from telegram.constants import ParseMode
 from telegram.ext import CallbackContext, CallbackQueryHandler, CommandHandler, ContextTypes, MessageHandler
 from telegram_bot_pagination import InlineKeyboardPaginator
 
-from bot import application, config
+from bot import application
+from bot.filters import IsChatAllowedFilter
 from bot.filters.has_user_in_args import HasUserInArgsFilter
 from bot.filters.reputation_change import ReputationChangeFilter
 from bot.handlers.on_any_message import users_updater
@@ -25,9 +26,8 @@ async def on_reputation_change(update: Update, context: ContextTypes.DEFAULT_TYP
     error_message = None
 
     message = update.effective_message
-    if message.chat.id != config.get_settings().MIREA_NINJA_GROUP_ID:
-        error_message = await message.reply_text("❌ Эта команда работает только в группе Mirea Ninja!")
-    elif not message.reply_to_message:
+
+    if not message.reply_to_message:
         return
     elif message.from_user.is_bot:
         error_message = await message.reply_text("❌ Изменять репутацию может только пользователь!")
@@ -280,4 +280,4 @@ application.add_handler(CommandHandler("me", show_self_rating))
 application.add_handler(CallbackQueryHandler(show_self_rating_position, pattern="^show_pos#"))
 
 # on non command i.e message
-application.add_handler(MessageHandler(ReputationChangeFilter(), on_reputation_change))
+application.add_handler(MessageHandler(ReputationChangeFilter() & IsChatAllowedFilter(), on_reputation_change))

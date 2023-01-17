@@ -42,9 +42,7 @@ async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE) -> N
     )
 
     # Finally, send the message
-    await context.bot.send_message(
-        chat_id=config.get_settings().MIREA_NINJA_GROUP_ID, text=message, parse_mode=ParseMode.HTML
-    )
+    await context.bot.send_message(chat_id=config.get_settings().ALLOWED_CHATS, text=message, parse_mode=ParseMode.HTML)
 
 
 def setup() -> None:

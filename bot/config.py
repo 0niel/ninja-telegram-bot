@@ -8,6 +8,12 @@ class AsyncPostgresDsn(PostgresDsn):
     allowed_schemes = {"postgres+asyncpg", "postgresql+asyncpg"}
 
 
+def _parse_allowed_chats(allowed_chats: str) -> list[int]:
+    if isinstance(allowed_chats, int):
+        return [allowed_chats]
+    return [int(chat) for chat in allowed_chats.split(",")]
+
+
 class Config(BaseSettings):
     TELEGRAM_TOKEN: str
 
@@ -37,7 +43,13 @@ class Config(BaseSettings):
             path=f"/{values.get('POSTGRES_DB') or ''}",
         )
 
-    MIREA_NINJA_GROUP_ID: int = Field(default=-567317308, env="MIREA_NINJA_GROUP_ID")
+    ALLOWED_CHATS: Optional[list[int]] = Field(default_factory=_parse_allowed_chats)
+
+    @validator("ALLOWED_CHATS", pre=True)
+    def parse_allowed_chats(cls, v):
+        if isinstance(v, list):
+            return v
+        return _parse_allowed_chats(v)
 
     # Yandex
     YANDEX_API_KEY: SecretStr

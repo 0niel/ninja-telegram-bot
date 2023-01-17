@@ -40,7 +40,7 @@ def auto_delete(
     message: Message, context: ContextTypes.DEFAULT_TYPE, from_message: Message = None, delete_after: int = 45
 ) -> None:
     """Auto-deletion of the bot message after a certain time."""
-    if message.chat.id == config.get_settings().MIREA_NINJA_GROUP_ID:
+    if message.chat.id in config.get_settings().ALLOWED_CHATS or len(config.get_settings().ALLOWED_CHATS) == 0:
         context.job_queue.run_repeating(
             edit_message_repeating_callback,
             interval=5,

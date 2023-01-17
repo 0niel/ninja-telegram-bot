@@ -4,6 +4,7 @@ from telegram import Update
 from telegram.ext import ContextTypes, MessageHandler, filters
 
 from bot import application
+from bot.filters import IsChatAllowedFilter
 from bot.services import voice_to_text as voice_to_text
 
 
@@ -25,5 +26,5 @@ async def on_voice_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -
 
 
 application.add_handler(
-    MessageHandler(filters.VOICE & filters.ChatType.GROUPS, on_voice_message),
+    MessageHandler(filters.VOICE & filters.ChatType.GROUPS & IsChatAllowedFilter(), on_voice_message),
 )

@@ -4,6 +4,7 @@ from telegram import Update
 from telegram.ext import ContextTypes, MessageHandler, filters
 
 from bot import application, timezone_offset
+from bot.filters import IsChatAllowedFilter
 from bot.services import messages_history, user
 
 
@@ -48,7 +49,7 @@ async def users_updater(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 application.add_handler(
     MessageHandler(
-        filters.ALL,
+        filters.ALL & IsChatAllowedFilter(),
         users_updater,
     ),
     group=2,

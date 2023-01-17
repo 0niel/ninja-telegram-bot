@@ -26,10 +26,12 @@ async def get_by_user_id(user_id: int, limit=10, offset=0) -> list[ReputationUpd
 async def is_user_send_rep_to_message(user_id: int, message_id: int) -> bool:
     """Check if user send reputation to message"""
     async with session() as db:
-        result = (await db.execute(
-            select(ReputationUpdate).where(
-                ReputationUpdate.from_user_id == user_id,
-                ReputationUpdate.message_id == message_id,
+        result = (
+            await db.execute(
+                select(ReputationUpdate).where(
+                    ReputationUpdate.from_user_id == user_id,
+                    ReputationUpdate.message_id == message_id,
+                )
             )
-        )).scalar_one_or_none()
+        ).scalar_one_or_none()
         return bool(result)
