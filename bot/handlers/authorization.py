@@ -177,7 +177,7 @@ async def whois(update: Update, context: CallbackContext) -> None:
         created_at_text = created_at.strftime("%d.%m.%Y %H:%M:%S")
 
         text = (
-            f"👤 Информация о пользователе {user['username']}:\n\n"
+            f"👤 Информация о пользователе {data['username']}:\n\n"
             f"📅 Дата регистрации: {created_at_text}\n"
             f"📊 Количество сообщений: {data['post_count']}\n"
             f"📈 Количество лайков: {data['like_count']}\n"
