@@ -1,5 +1,6 @@
 import json
 import logging
+from datetime import datetime
 
 import httpx
 from fastapi.requests import Request
@@ -10,6 +11,7 @@ from telegram.ext import CallbackContext, CommandHandler
 
 from bot import application
 from bot.config import get_settings
+from bot.filters import HasUserInArgsFilter
 from bot.services import user as user_service
 from bot.services.auto_delete import auto_delete
 from bot.utils.user_api_keys import decode_payload, generate_auth_url, generate_nonce
@@ -113,5 +115,69 @@ async def auth(update: Update, context: CallbackContext) -> None:
     )
 
 
+async def whois(update: Update, context: CallbackContext) -> None:
+    msg = update.effective_message
+
+    if msg.reply_to_message:
+        from_user_id = msg.reply_to_message.from_user.id
+        user = await user_service.get_by_id(from_user_id)
+    elif HasUserInArgsFilter().filter(msg):
+        username = context.args[0].replace("@", "").strip()
+        user = await user_service.get_by_username(username)
+    else:
+        new_message = await msg.reply_text("❌ Вы должны ответить на сообщение пользователя или упомянуть его!")
+        auto_delete(new_message, context, from_message=msg)
+        return
+
+    if not user:
+        new_message = await msg.reply_text("❌ Пользователь не найден!")
+        auto_delete(new_message, context, from_message=msg)
+        return
+
+    if not user.discourse_id:
+        new_message = await msg.reply_text("❌ Пользователь не привязал свой аккаунт к боту.")
+        auto_delete(new_message, context, from_message=msg)
+        return
+
+    async with httpx.AsyncClient() as client:
+        headers = {
+            "Api-Key": get_settings().DISCOURSE_API_KEY,
+            "Api-Username": "system",
+        }
+
+        response = await client.get(
+            f"{get_settings().DISCOURSE_URL}/users/{user.discourse_id}.json", headers=headers
+        )
+
+        if response.status_code != 200:
+            new_message = await msg.reply_text("❌ Произошла ошибка при получении данных пользователя.")
+            auto_delete(new_message, context, from_message=msg)
+            return
+
+        data = response.json()
+
+        if not data["id"]:
+            new_message = await msg.reply_text("❌ Пользователь не найден.")
+            auto_delete(new_message, context, from_message=msg)
+            return
+
+        admin_text = "👑 Администратор" if data["admin"] else ""
+        moderator_text = "🔨 Модератор" if data["moderator"] else ""
+        created_at = datetime.fromisoformat(data["created_at"].replace("Z", "+00:00"))
+        created_at_text = created_at.strftime("%d.%m.%Y %H:%M:%S")
+
+        text = (
+            f"👤 Информация о пользователе {user['username']}:\n\n"
+            f"📅 Дата регистрации: {created_at_text}\n"
+            f"📊 Количество сообщений: {data['post_count']}\n"
+            f"📈 Количество лайков: {data['like_count']}\n"
+            f"📊 Уровень доверия: {data['trust_level']}\n"
+            f"{admin_text} {moderator_text}"
+        )
+
+        await msg.reply_text(text)
+
+
 application.add_handler(CommandHandler("start", auth_deeplink_callback), group=1)
 application.add_handler(CommandHandler(["auth", "connect", "link"], auth), group=1)
+application.add_handler(CommandHandler("whois", whois), group=1)

@@ -6,7 +6,7 @@ from telegram import Update
 from bot import config
 
 from . import application
-from .handlers.authorization import auth_callback
+from .handlers.authorization import auth_redirect_callback
 
 if config.get_settings().RUN_WITH_WEBHOOK:
     from . import web_app
@@ -30,7 +30,7 @@ async def run() -> None:
         # Set up webserver
         web_app.add_route("/telegram", telegram, methods=["POST"])
         web_app.add_route("/health", health, methods=["GET"])
-        web_app.add_route("/auth", auth_callback, methods=["GET"])
+        web_app.add_route("/auth", auth_redirect_callback, methods=["GET"])
 
     # Run the bot
     if config.get_settings().RUN_WITH_WEBHOOK:
