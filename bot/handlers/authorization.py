@@ -72,7 +72,11 @@ async def auth_deeplink_callback(update: Update, context: CallbackContext) -> No
     if not user:
         return
 
-    if update.message.text.startswith("Ошибка"):
+    if "auth" in update.message.text:
+        await auth(update, context)
+        return
+
+    if "Ошибка" in update.effective_message.text:
         await update.effective_message.reply_text("❌ Произошла ошибка при авторизации. Попробуйте еще раз.")
         return
 
@@ -89,7 +93,9 @@ async def auth(update: Update, context: CallbackContext) -> None:
 
     if update.effective_chat.type != ChatType.PRIVATE:
         msg = await update.effective_message.reply_text("❌ Аутентификация доступна только в личных сообщениях бота.")
-        auto_delete(msg, context, from_message=update.effective_message)
+        button = InlineKeyboardButton("🔗 Перейти", url=f"https://t.me/{application.bot.username}?start=auth")
+        keyboard = InlineKeyboardMarkup([[button]])
+        await msg.edit_reply_markup(keyboard)
         return
 
     user = await user_service.get_by_id(update.effective_user.id)
