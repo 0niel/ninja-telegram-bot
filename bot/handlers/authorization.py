@@ -59,7 +59,7 @@ async def auth_redirect_callback(request: Request) -> Response:
 
 
 async def auth_deeplink_callback(update: Update, context: CallbackContext) -> None:
-    if not update.message:
+    if not update.effective_message:
         return
 
     if update.effective_chat.type != ChatType.PRIVATE:
@@ -72,7 +72,7 @@ async def auth_deeplink_callback(update: Update, context: CallbackContext) -> No
     if not user:
         return
 
-    if "auth" in update.message.text:
+    if "auth" in update.effective_message.text:
         await auth(update, context)
         return
 
@@ -80,6 +80,7 @@ async def auth_deeplink_callback(update: Update, context: CallbackContext) -> No
         await update.effective_message.reply_text("❌ Произошла ошибка при авторизации. Попробуйте еще раз.")
         return
 
+    logger.info("User %s has successfully authenticated", user.id)
     await update.effective_message.reply_text("✅ Аккаунт Mirea Ninja успешно привязан к боту.")
 
 

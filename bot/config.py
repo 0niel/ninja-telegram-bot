@@ -51,12 +51,12 @@ class Config(BaseSettings):
         return v if isinstance(v, list) else _parse_allowed_chats(v)
 
     # Yandex
-    YANDEX_API_KEY: SecretStr
-    YANDEX_WEATHER_API_KEY: SecretStr
+    YANDEX_API_KEY: str
+    YANDEX_WEATHER_API_KEY: str
     YANDEX_FOLDER_ID: str
 
     # Discourse
-    DISCOURSE_API_KEY: SecretStr
+    DISCOURSE_API_KEY: str
     DISCOURSE_URL: AnyHttpUrl
 
     class Config:
