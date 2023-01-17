@@ -35,7 +35,7 @@ async def run() -> None:
     # Run the bot
     if config.get_settings().RUN_WITH_WEBHOOK:
         server = uvicorn.Server(
-            config=uvicorn.Config(web_app, host=config.get_settings().HOST, port=config.get_settings().PORT)
+            config=uvicorn.Config(web_app, host="0.0.0.0", port=config.get_settings().PORT)
         )
 
         async with application:
