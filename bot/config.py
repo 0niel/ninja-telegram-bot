@@ -47,9 +47,7 @@ class Config(BaseSettings):
 
     @validator("ALLOWED_CHATS", pre=True)
     def parse_allowed_chats(cls, v):
-        if isinstance(v, list):
-            return v
-        return _parse_allowed_chats(v)
+        return v if isinstance(v, list) else _parse_allowed_chats(v)
 
     # Yandex
     YANDEX_API_KEY: SecretStr
