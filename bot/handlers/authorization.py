@@ -159,6 +159,7 @@ async def whois(update: Update, context: CallbackContext) -> None:
         response = await client.get(f"{get_settings().DISCOURSE_URL}/users/{user.discourse_id}.json", headers=headers)
 
         if response.status_code != 200:
+            logger.error("Failed to get user info from Mirea Ninja: %s", response.text)
             new_message = await msg.reply_text("❌ Произошла ошибка при получении данных пользователя.")
             auto_delete(new_message, context, from_message=msg)
             return
