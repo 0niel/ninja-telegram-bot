@@ -92,10 +92,12 @@ async def auth(update: Update, context: CallbackContext) -> None:
         return
 
     if update.effective_chat.type != ChatType.PRIVATE:
-        msg = await update.effective_message.reply_text("❌ Аутентификация доступна только в личных сообщениях бота.")
         button = InlineKeyboardButton("🔗 Перейти", url=f"https://t.me/{application.bot.username}?start=auth")
         keyboard = InlineKeyboardMarkup([[button]])
-        await msg.edit_reply_markup(keyboard)
+        msg = await update.effective_message.reply_text(
+            "❌ Аутентификация доступна только в личных сообщениях бота.", reply_markup=keyboard
+        )
+        auto_delete(msg, context, from_message=update.effective_message)
         return
 
     user = await user_service.get_by_id(update.effective_user.id)
