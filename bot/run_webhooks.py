@@ -25,7 +25,7 @@ async def health(request: Request):
 async def run() -> None:
     """Start the bot."""
     if config.get_settings().RUN_WITH_WEBHOOK:
-        await application.bot.set_webhook(url=f"{config.get_settings().HOST}/telegram")
+        await application.bot.set_webhook(url=f"{config.get_settings().BOT_URL}/telegram")
 
         # Set up webserver
         web_app.add_route("/telegram", telegram, methods=["POST"])
@@ -34,7 +34,9 @@ async def run() -> None:
 
     # Run the bot
     if config.get_settings().RUN_WITH_WEBHOOK:
-        server = uvicorn.Server(config=uvicorn.Config(web_app, host="0.0.0.0", port=config.get_settings().PORT))
+        server = uvicorn.Server(
+            config=uvicorn.Config(web_app, host=config.get_settings().HOST, port=config.get_settings().PORT)
+        )
 
         async with application:
             await application.start()

@@ -145,9 +145,7 @@ async def whois(update: Update, context: CallbackContext) -> None:
             "Api-Username": "system",
         }
 
-        response = await client.get(
-            f"{get_settings().DISCOURSE_URL}/users/{user.discourse_id}.json", headers=headers
-        )
+        response = await client.get(f"{get_settings().DISCOURSE_URL}/users/{user.discourse_id}.json", headers=headers)
 
         if response.status_code != 200:
             new_message = await msg.reply_text("❌ Произошла ошибка при получении данных пользователя.")

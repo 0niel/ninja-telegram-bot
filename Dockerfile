@@ -21,4 +21,6 @@ RUN poetry install --no-dev --no-root --no-interaction
 
 COPY . /app/
 
+EXPOSE $PORT
+
 CMD ["python", "-m", "bot"]

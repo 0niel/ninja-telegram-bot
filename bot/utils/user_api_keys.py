@@ -48,7 +48,7 @@ def generate_auth_url(client_id: int, public_key: str, nonce: str):
         "scopes": scopes,
         "client_id": client_id,
         "nonce": nonce,
-        "auth_redirect": f"{config.get_settings().HOST}/auth",
+        "auth_redirect": f"{config.get_settings().BOT_URL}/auth",
         "application_name": "Ninja Telegram Bot",
         "public_key": public_key,
         # "push_url": f"{config.get_settings().HOST}/push",

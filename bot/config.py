@@ -20,7 +20,8 @@ class Config(BaseSettings):
     RUN_WITH_WEBHOOK: bool = Field(default=False)
 
     # Host for webhook and webserver. Should be accessible from the Internet for Telegram to work.
-    HOST: str = "https://bot.mirea.ninja"
+    BOT_URL: str = "https://bot.mirea.ninja"
+    HOST: str = "bot.mirea.ninja"
     PORT: int = 8000
 
     # Postgres
