@@ -17,6 +17,10 @@ class User(TimedBaseModel):
     reputation = db.Column(db.FLOAT, nullable=False, server_default="0")
     force = db.Column(db.FLOAT, nullable=False, server_default="0")
     update_reputation_at = db.Column(db.DateTime(True), nullable=True)
+    discourse_id = db.Column(db.BigInteger, nullable=True, unique=True)
+    discourse_api_key = db.Column(db.UnicodeText, nullable=True)
+    discourse_request_nonce = db.Column(db.UnicodeText, nullable=True)
+    discourse_notifications_enabled = db.Column(db.Boolean, nullable=False, server_default=expression.false())
 
 
 class UserRelatedModel(BaseModel):

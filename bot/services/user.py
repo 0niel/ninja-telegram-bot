@@ -30,6 +30,28 @@ async def get_by_id(user_id: int) -> User | None:
         return res.scalar_one_or_none()
 
 
+async def set_discourse_nonce(user_id: int, nonce: str):
+    async with session() as db:
+        await db.execute(update(User).where(User.id == user_id).values(discourse_request_nonce=nonce))
+        await db.commit()
+
+
+async def get_by_discourse_nonce(nonce: str) -> User | None:
+    async with session() as db:
+        res = await db.execute(select(User).where(User.discourse_request_nonce == nonce))
+        return res.scalar_one_or_none()
+
+
+async def update_discourse_data(user_id: int, discourse_id: int, discourse_api_key: str):
+    async with session() as db:
+        await db.execute(
+            update(User)
+            .where(User.id == user_id)
+            .values(discourse_id=discourse_id, discourse_api_key=discourse_api_key)
+        )
+        await db.commit()
+
+
 async def get_by_username(username: str) -> User | None:
     async with session() as db:
         res = await db.execute(select(User).where(User.username == username))

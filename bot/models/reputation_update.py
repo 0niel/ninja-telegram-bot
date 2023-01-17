@@ -4,9 +4,8 @@ import datetime
 
 import sqlalchemy as db
 
+from bot import timezone_offset
 from bot.models.base import BaseModel
-
-offset = datetime.timezone(datetime.timedelta(hours=3))
 
 
 class ReputationUpdate(BaseModel):
@@ -20,4 +19,4 @@ class ReputationUpdate(BaseModel):
     force_delta = db.Column(db.FLOAT, nullable=True)
     new_reputation = db.Column(db.FLOAT)
     new_force = db.Column(db.FLOAT)
-    updated_at = db.Column(db.DateTime(True), default=datetime.datetime.now(offset))
+    updated_at = db.Column(db.DateTime(True), default=datetime.datetime.now(timezone_offset))

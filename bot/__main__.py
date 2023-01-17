@@ -2,6 +2,7 @@ import asyncio
 import html
 import json
 import logging
+import os
 import traceback
 
 from telegram import Update
@@ -10,8 +11,9 @@ from telegram.ext import ContextTypes
 
 from bot import config, handlers
 from bot.services import daily_job
+from bot.utils import user_api_keys
 
-from . import application
+from . import app_dir, application
 from . import run_polling as polling
 from . import run_webhooks as webhooks
 
@@ -45,7 +47,41 @@ async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE) -> N
     await context.bot.send_message(chat_id=config.get_settings().ALLOWED_CHATS, text=message, parse_mode=ParseMode.HTML)
 
 
+def init_keys() -> None:
+    # Generate RSA key pair for Mirea Ninja Forum integration
+    secure_dir = os.path.join(app_dir, "secure")
+
+    if not os.path.exists(os.path.join(secure_dir, "private.key")) or not os.path.exists(
+        os.path.join(secure_dir, "public.key")
+    ):
+        logger.info("Generating RSA key pair for Mirea Ninja Forum integration...")
+        keys = user_api_keys.generate_rsa_keys()
+        public_key, private_key = keys["public"], keys["private"]
+
+        with open(os.path.join(secure_dir, "private.key"), "wb") as private_key_file:
+            private_key_file.write(private_key.encode())
+
+        with open(os.path.join(secure_dir, "public.key"), "wb") as public_key_file:
+            public_key_file.write(public_key.encode())
+
+    else:
+        logger.info("RSA key pair for Mirea Ninja Forum integration exists. Cool!")
+        with open(os.path.join(secure_dir, "private.key"), "rb") as private_key_file:
+            private_key = private_key_file.read().decode()
+
+        with open(os.path.join(secure_dir, "public.key"), "rb") as public_key_file:
+            public_key = public_key_file.read().decode()
+
+    application.bot_data["private_key"] = private_key
+    application.bot_data["public_key"] = public_key
+
+
 def setup() -> None:
+    """Setup the bot."""
+
+    # Init RSA keys
+    init_keys()
+
     # Setup command and message handlers
     handlers.setup()
 
@@ -58,6 +94,7 @@ def setup() -> None:
 
 if __name__ == "__main__":
     setup()
+
     if config.get_settings().RUN_WITH_WEBHOOK:
         asyncio.run(webhooks.run())
     else:

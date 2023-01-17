@@ -1,7 +1,7 @@
 from functools import lru_cache
 from typing import Optional
 
-from pydantic import BaseSettings, Field, PostgresDsn, SecretStr, validator
+from pydantic import AnyHttpUrl, BaseSettings, Field, PostgresDsn, SecretStr, validator
 
 
 class AsyncPostgresDsn(PostgresDsn):
@@ -43,7 +43,7 @@ class Config(BaseSettings):
             path=f"/{values.get('POSTGRES_DB') or ''}",
         )
 
-    ALLOWED_CHATS: Optional[list[int]] = Field(default_factory=_parse_allowed_chats)
+    ALLOWED_CHATS: Optional[list[int]]
 
     @validator("ALLOWED_CHATS", pre=True)
     def parse_allowed_chats(cls, v):
@@ -55,6 +55,10 @@ class Config(BaseSettings):
     YANDEX_API_KEY: SecretStr
     YANDEX_WEATHER_API_KEY: SecretStr
     YANDEX_FOLDER_ID: str
+
+    # Discourse
+    DISCOURSE_API_KEY: SecretStr
+    DISCOURSE_URL: AnyHttpUrl
 
     class Config:
         env_file = ".env"
