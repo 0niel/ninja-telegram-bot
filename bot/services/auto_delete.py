@@ -1,11 +1,21 @@
 import re
 
 from telegram import Message
+from telegram.constants import ParseMode
 from telegram.ext import ContextTypes
 
 from bot import config
 
 DELETE_MESSAGE_TEMPLATE = "Это системное сообщение будет удалено через {seconds} секунд..."
+
+
+def get_message_parse_mode(text: str) -> ParseMode:
+    """Returns formatting type of message."""
+    if re.search(r"<\w+>|</\w+>", text):
+        return ParseMode.HTML
+
+    # By default, telegram uses markdown formatting.
+    return ParseMode.MARKDOWN_V2
 
 
 async def edit_message_repeating_callback(context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -21,10 +31,12 @@ async def edit_message_repeating_callback(context: ContextTypes.DEFAULT_TYPE) ->
             message.text.replace(
                 DELETE_MESSAGE_TEMPLATE.format(seconds=time_left), DELETE_MESSAGE_TEMPLATE.format(seconds=time_left - 5)
             ),
+            parse_mode=get_message_parse_mode(message.text),
         )
     else:
         message = await message.edit_text(
             message.text + "\n\n" + DELETE_MESSAGE_TEMPLATE.format(seconds=time_to_delete),
+            parse_mode=get_message_parse_mode(message.text),
         )
 
     context.job.data["message"] = message
