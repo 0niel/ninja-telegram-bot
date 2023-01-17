@@ -1,6 +1,7 @@
 import logging
 
 from telegram import Update
+from telegram.constants import ParseMode
 from telegram.ext import ContextTypes, MessageHandler, filters
 from telegram.helpers import escape_markdown
 
@@ -35,11 +36,13 @@ async def on_join(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def on_left(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_message(
-        escape_markdown(
-            f"@{update.effective_user.username} ({update.effective_user.first_name}) покинул нас. Надеемся, что мы "
+        chat_id=update.effective_chat.id,
+        text=escape_markdown(
+            f"@{update.effective_user.username} ({update.effective_user.first_name}) покинул(а) нас. Надеемся, что мы "
             f"увидимся снова!",
             version=2,
-        )
+        ),
+        parse_mode=ParseMode.MARKDOWN_V2,
     )
 
 

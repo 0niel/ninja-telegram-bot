@@ -9,15 +9,6 @@ from bot import config
 DELETE_MESSAGE_TEMPLATE = "Это системное сообщение будет удалено через {seconds} секунд..."
 
 
-def get_message_parse_mode(text: str) -> ParseMode:
-    """Returns formatting type of message."""
-    if re.search(r"<\w+>|</\w+>", text):
-        return ParseMode.HTML
-
-    # By default, telegram uses markdown formatting.
-    return ParseMode.MARKDOWN_V2
-
-
 async def edit_message_repeating_callback(context: ContextTypes.DEFAULT_TYPE) -> None:
     message: Message = context.job.data["message"]
     time_to_delete: int = context.job.data["time_to_delete"]
@@ -28,15 +19,15 @@ async def edit_message_repeating_callback(context: ContextTypes.DEFAULT_TYPE) ->
     if time_left := re.search(DELETE_MESSAGE_TEMPLATE.format(seconds=r"(?P<seconds>\d+)"), message.text):
         time_left = int(time_left["seconds"])
         message = await message.edit_text(
-            message.text.replace(
+            message.text_html.replace(
                 DELETE_MESSAGE_TEMPLATE.format(seconds=time_left), DELETE_MESSAGE_TEMPLATE.format(seconds=time_left - 5)
             ),
-            parse_mode=get_message_parse_mode(message.text),
+            parse_mode=ParseMode.HTML,
         )
     else:
         message = await message.edit_text(
-            message.text + "\n\n" + DELETE_MESSAGE_TEMPLATE.format(seconds=time_to_delete),
-            parse_mode=get_message_parse_mode(message.text),
+            message.text_html + "\n\n" + DELETE_MESSAGE_TEMPLATE.format(seconds=time_to_delete),
+            parse_mode=ParseMode.HTML,
         )
 
     context.job.data["message"] = message
