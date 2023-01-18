@@ -126,7 +126,7 @@ async def push(request: Request) -> Response:
         )
         messages.append((user.id, message))
 
-    for user_id, message in messages:
+    for user_id, message in set(messages):
         await bot.send_message(user_id, message, parse_mode=ParseMode.HTML)
 
     return Response(status_code=200)
