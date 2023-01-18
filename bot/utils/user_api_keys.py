@@ -42,7 +42,7 @@ def decode_payload(payload: str, private_key: str):
 
 
 def generate_auth_url(client_id: int, public_key: str, nonce: str):
-    scopes = "session_info,notifications,push,message_bus,read"  # one_time_password
+    scopes = "session_info,notifications,push,read"
 
     params = {
         "scopes": scopes,
@@ -51,7 +51,7 @@ def generate_auth_url(client_id: int, public_key: str, nonce: str):
         "auth_redirect": f"{config.get_settings().BOT_URL}/auth",
         "application_name": "Ninja Telegram Bot",
         "public_key": public_key,
-        # "push_url": f"{config.get_settings().HOST}/push",
+        "push_url": f"{config.get_settings().BOT_URL}/push",
     }
 
     return f"{config.get_settings().DISCOURSE_URL}/user-api-key/new?{serialize_params(params)}"

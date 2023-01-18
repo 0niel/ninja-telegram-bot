@@ -52,6 +52,18 @@ async def update_discourse_data(user_id: int, discourse_id: int, discourse_api_k
         await db.commit()
 
 
+async def set_discourse_notifications_enabled(user_id: int, enabled: bool):
+    async with session() as db:
+        await db.execute(update(User).where(User.id == user_id).values(discourse_notifications_enabled=enabled))
+        await db.commit()
+
+
+async def get_by_discourse_id(discourse_id: int) -> User | None:
+    async with session() as db:
+        res = await db.execute(select(User).where(User.discourse_id == discourse_id))
+        return res.scalar_one_or_none()
+
+
 async def get_by_username(username: str) -> User | None:
     async with session() as db:
         res = await db.execute(select(User).where(User.username == username))

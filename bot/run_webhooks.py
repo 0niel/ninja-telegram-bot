@@ -3,10 +3,10 @@ from fastapi.requests import Request
 from fastapi.responses import JSONResponse, Response
 from telegram import Update
 
+import bot.handlers.discourse as discourse
 from bot import config
 
 from . import application
-from .handlers.authorization import auth_redirect_callback
 
 if config.get_settings().RUN_WITH_WEBHOOK:
     from . import web_app
@@ -30,7 +30,8 @@ async def run() -> None:
         # Set up webserver
         web_app.add_route("/telegram", telegram, methods=["POST"])
         web_app.add_route("/health", health, methods=["GET"])
-        web_app.add_route("/auth", auth_redirect_callback, methods=["GET"])
+        web_app.add_route("/auth", discourse.auth_redirect_callback, methods=["GET"])
+        web_app.add_route("/push", discourse.push, methods=["POST"])
 
     # Run the bot
     if config.get_settings().RUN_WITH_WEBHOOK:
