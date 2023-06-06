@@ -22,6 +22,7 @@ from bot.config import get_settings
 from bot.filters import HasUserInArgsFilter
 from bot.services import user as user_service
 from bot.services.auto_delete import auto_delete
+from bot.services.discourse import get_user_by_id
 from bot.utils.user_api_keys import decode_payload, generate_auth_url, generate_nonce
 
 logger = logging.getLogger(__name__)
@@ -301,23 +302,8 @@ async def whois(update: Update, context: CallbackContext) -> None:
         auto_delete(new_message, context, from_message=msg)
         return
 
-    async with httpx.AsyncClient() as client:
-        headers = {
-            "Api-Key": get_settings().DISCOURSE_API_KEY,
-            "Api-Username": "system",
-        }
-
-        response = await client.get(
-            f"{get_settings().DISCOURSE_URL}/admin/users/{user.discourse_id}.json", headers=headers
-        )
-
-        if response.status_code != 200:
-            logger.error("Failed to get user info from Mirea Ninja: %s", response.text)
-            new_message = await msg.reply_text("❌ Произошла ошибка при получении данных пользователя.")
-            auto_delete(new_message, context, from_message=msg)
-            return
-
-        data = response.json()
+    try:
+        data = await get_user_by_id(user.discourse_id)
 
         if not data["id"]:
             new_message = await msg.reply_text("❌ Пользователь не найден.")
@@ -339,6 +325,12 @@ async def whois(update: Update, context: CallbackContext) -> None:
         )
 
         await msg.reply_text(text)
+
+    except httpx.HTTPError as e:
+        logger.error("Failed to get user info from Mirea Ninja: %s", e)
+        new_message = await msg.reply_text("❌ Произошла ошибка при получении данных пользователя.")
+        auto_delete(new_message, context, from_message=msg)
+        return
 
 
 async def notifications(update: Update, context: CallbackContext) -> None:
