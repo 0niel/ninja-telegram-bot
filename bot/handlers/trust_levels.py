@@ -81,4 +81,4 @@ async def tl(update: Update, context: CallbackContext) -> None:
         return
 
 
-application.add_handler(CommandHandler("tl", tl), group=1)
+application.add_handler(CommandHandler("tl", tl), group=5)
