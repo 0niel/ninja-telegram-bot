@@ -6,7 +6,6 @@ authors = ["Sergey Dmitriev <51058739+0niel@users.noreply.github.com>"]
 
 [tool.poetry.dependencies]
 python = "^3.9"
-SQLAlchemy = "^1.4.37"
 envparse = "^0.2.0"
 pydantic = {extras = ["dotenv"], version = "^1.10.4"}
 requests = "^2.28.0"
@@ -21,11 +20,12 @@ Pillow = "^9.1.1"
 gTTS = "^2.2.4"
 asyncpg = "^0.27.0"
 python-telegram-bot = {extras = ["job-queue"], version = "^20.0"}
-alembic = "^1.9.2"
 httpx = "^0.23.3"
 fastapi = "^0.89.1"
 uvicorn = "^0.20.0"
 pycryptodome = "^3.16.0"
+supabase = "1.0.3"
+postgrest = "0.10.6"
 
 [tool.poetry.dev-dependencies]
 mypy = "^0.942"

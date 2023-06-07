@@ -1,54 +1,53 @@
 import datetime
 
-from sqlalchemy import select
-from sqlalchemy.dialects.postgresql import insert as pg_insert
-
-from bot.db import session
+from bot.constants import SUPABASE_MESSAGES_HISTORY_TABLE
+from bot.db import supabase
 from bot.models import MessagesHistory
 
 
 async def get_by_user_id(user_id: int, limit: int = 5, offset: int = 0):
     """Get user messages history"""
-    async with session() as db:
-        return (
-            (
-                await db.execute(
-                    select(MessagesHistory)
-                    .where(MessagesHistory.user_id == user_id)
-                    .order_by(MessagesHistory.date.desc())
-                    .offset(offset)
-                    .limit(limit)
-                )
-            )
-            .scalars()
-            .all()
-        )
+
+    response = (
+        await supabase.table(SUPABASE_MESSAGES_HISTORY_TABLE)
+        .select("*")
+        .eq("tg_user_id", user_id)
+        .order("date", desc=True)
+        .range(offset, offset + limit)
+        .execute()
+    )
+    return [MessagesHistory(**item) for item in response.data]
 
 
 async def get_top_by_date(date: datetime.date, limit: int = 5):
     """Get top users by messages count"""
-    async with session() as db:
-        return (
-            (
-                await db.execute(
-                    select(MessagesHistory)
-                    .where(MessagesHistory.date == date)
-                    .order_by(MessagesHistory.messages.desc())
-                    .limit(limit)
-                )
-            )
-            .scalars()
-            .all()
-        )
+    response = (
+        await supabase.table(SUPABASE_MESSAGES_HISTORY_TABLE)
+        .select("*")
+        .eq("date", date)
+        .order("messages", desc=True)
+        .limit(limit)
+        .execute()
+    )
+    return [MessagesHistory(**item) for item in response.data]
 
 
 async def add_message(user_id: int, date: datetime.date):
     """Add message to history. If message already exists, increment messages count"""
-    async with session() as db:
-        stmt = pg_insert(MessagesHistory).values(user_id=user_id, date=date, messages=1)
-        stmt = stmt.on_conflict_do_update(
-            index_elements=[MessagesHistory.user_id, MessagesHistory.date],
-            set_=dict(messages=MessagesHistory.messages + 1),
-        )
-        await db.execute(stmt)
-        await db.commit()
+    date = date.strftime("%Y-%m-%d")
+
+    response = (
+        await supabase.table(SUPABASE_MESSAGES_HISTORY_TABLE)
+        .select("*")
+        .eq("tg_user_id", user_id)
+        .eq("date", date)
+        .execute()
+    )
+    if response.data:
+        await supabase.table(SUPABASE_MESSAGES_HISTORY_TABLE).update({"messages": response.data[0]["messages"] + 1}).eq(
+            "id", response.data[0]["id"]
+        ).execute()
+    else:
+        await supabase.table(SUPABASE_MESSAGES_HISTORY_TABLE).insert(
+            {"tg_user_id": user_id, "date": date, "messages": 1}
+        ).execute()

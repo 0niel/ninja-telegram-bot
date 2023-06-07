@@ -1,7 +1,7 @@
 from functools import lru_cache
 from typing import Optional
 
-from pydantic import AnyHttpUrl, BaseSettings, Field, PostgresDsn, SecretStr, validator
+from pydantic import AnyHttpUrl, BaseSettings, Field, PostgresDsn, validator
 
 
 class AsyncPostgresDsn(PostgresDsn):
@@ -24,25 +24,10 @@ class Config(BaseSettings):
     HOST: str = "bot.mirea.ninja"
     PORT: int = 8000
 
-    # Postgres
-    POSTGRES_SERVER: str
-    POSTGRES_USER: str
-    POSTGRES_PASSWORD: SecretStr
-    POSTGRES_DB: str
-
-    POSTGRES_URI: Optional[AsyncPostgresDsn]
-
-    @validator("POSTGRES_URI", pre=True)
-    def assemble_db_connection(cls, v, values):
-        if isinstance(v, str):
-            return v
-        return AsyncPostgresDsn.build(
-            scheme="postgresql+asyncpg",
-            user=values.get("POSTGRES_USER"),
-            password=values.get("POSTGRES_PASSWORD").get_secret_value(),
-            host=values.get("POSTGRES_SERVER"),
-            path=f"/{values.get('POSTGRES_DB') or ''}",
-        )
+    SUPABASE_URL: AnyHttpUrl
+    SUPABASE_KEY: str
+    SUPABASE_USERNAME: str
+    SUPABASE_PASSWORD: str
 
     ALLOWED_CHATS: Optional[list[int]]
 

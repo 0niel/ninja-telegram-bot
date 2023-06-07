@@ -1,32 +1,21 @@
-from __future__ import annotations
+from datetime import datetime
+from typing import Optional
 
-import sqlalchemy as db
-from sqlalchemy.sql import expression
-
-from bot.models.base import BaseModel, TimedBaseModel
+from pydantic import BaseModel, Field
 
 
-class User(TimedBaseModel):
-    __tablename__ = "users"
-
-    id = db.Column(db.BigInteger, primary_key=True, index=True, unique=True)
-    username = db.Column(db.UnicodeText)
-    first_name = db.Column(db.UnicodeText, nullable=True)
-    last_name = db.Column(db.UnicodeText, nullable=True)
-    is_admin = db.Column(db.Boolean, server_default=expression.false())
-    reputation = db.Column(db.FLOAT, nullable=False, server_default="0")
-    force = db.Column(db.FLOAT, nullable=False, server_default="0")
-    update_reputation_at = db.Column(db.DateTime(True), nullable=True)
-    discourse_id = db.Column(db.BigInteger, nullable=True, unique=True)
-    discourse_api_key = db.Column(db.UnicodeText, nullable=True)
-    discourse_request_nonce = db.Column(db.UnicodeText, nullable=True)
-    discourse_notifications_enabled = db.Column(db.Boolean, nullable=False, server_default=expression.false())
-
-
-class UserRelatedModel(BaseModel):
-    __abstract__ = True
-
-    user_id = db.Column(
-        db.ForeignKey(f"{User.__tablename__}.id", ondelete="CASCADE", onupdate="CASCADE"),
-        nullable=False,
-    )
+class User(BaseModel):
+    id: int = Field(..., index=True, unique=True)
+    username: Optional[str] = None
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    is_admin: bool = Field(False)
+    reputation: float = Field(0, nullable=False)
+    force: float = Field(0, nullable=False)
+    update_reputation_at: Optional[datetime] = None
+    discourse_id: Optional[int] = Field(None, unique=True)
+    discourse_api_key: Optional[str] = None
+    discourse_request_nonce: Optional[str] = None
+    discourse_notifications_enabled: bool = Field(False, nullable=False)
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)

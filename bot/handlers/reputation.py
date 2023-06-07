@@ -183,7 +183,7 @@ async def get_logs_data(user_id: int):
 
     if history:
         for i in range(len(history)):
-            from_user = await user_service.get_by_id(history[i].from_user_id)
+            from_user = await user_service.get_by_id(history[i].from_tg_user_id)
             updated_at = str(history[i].updated_at).split(".")[0]
             updated_at_date = updated_at.split()[0]
             updated_at_time = updated_at.split()[1]
@@ -231,7 +231,6 @@ async def reputation_change_history(update: Update, context: ContextTypes.DEFAUL
 
     if len(logs_data) > 0:
         paginator = InlineKeyboardPaginator(len(logs_data), data_pattern="logs#{page}#" + str(msg.from_user.id))
-
         new_message = await msg.reply_html(text=logs_data[0], reply_markup=paginator.markup)
 
     else:

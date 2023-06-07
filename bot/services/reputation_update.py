@@ -1,37 +1,35 @@
-from sqlalchemy import select
-
-from bot.db import session
+from bot.constants import SUPABASE_REPUTATION_UPDATES_TABLE
+from bot.db import supabase
 from bot.models import ReputationUpdate
 
 
 async def create(reputation_update: ReputationUpdate) -> None:
     """Create reputation update"""
-    async with session() as db:
-        db.add(reputation_update)
-        await db.commit()
+
+    await supabase.table(SUPABASE_REPUTATION_UPDATES_TABLE).insert(reputation_update.dict(exclude={"id"})).execute()
 
 
-async def get_by_user_id(user_id: int, limit=10, offset=0) -> list[ReputationUpdate]:
+async def get_by_user_id(user_id: int, limit=100) -> list[ReputationUpdate]:
     """Get user reputation history"""
-    async with session() as db:
-        return await db.execute(
-            select(ReputationUpdate)
-            .where(ReputationUpdate.to_user_id == user_id)
-            .order_by(ReputationUpdate.updated_at.desc())
-            .offset(offset)
-            .limit(limit)
-        ).all()
+    response = (
+        await supabase.table(SUPABASE_REPUTATION_UPDATES_TABLE)
+        .select("*")
+        .eq("to_tg_user_id", user_id)
+        .order("updated_at", desc=True)
+        .limit(limit)
+        .execute()
+    )
+    return [ReputationUpdate(**item) for item in response.data]
 
 
 async def is_user_send_rep_to_message(user_id: int, message_id: int) -> bool:
     """Check if user send reputation to message"""
-    async with session() as db:
-        result = (
-            await db.execute(
-                select(ReputationUpdate).where(
-                    ReputationUpdate.from_user_id == user_id,
-                    ReputationUpdate.message_id == message_id,
-                )
-            )
-        ).scalar_one_or_none()
-        return bool(result)
+
+    response = (
+        await supabase.table(SUPABASE_REPUTATION_UPDATES_TABLE)
+        .select("*")
+        .eq("from_tg_user_id", user_id)
+        .eq("message_id", message_id)
+        .execute()
+    )
+    return bool(response.data)
