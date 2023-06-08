@@ -1,8 +1,14 @@
 import logging
 
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
+from telegram import InlineKeyboardButton
+from telegram import InlineKeyboardMarkup
+from telegram import Update
 from telegram.constants import ParseMode
-from telegram.ext import CallbackContext, CallbackQueryHandler, CommandHandler, ContextTypes, MessageHandler
+from telegram.ext import CallbackContext
+from telegram.ext import CallbackQueryHandler
+from telegram.ext import CommandHandler
+from telegram.ext import ContextTypes
+from telegram.ext import MessageHandler
 from telegram_bot_pagination import InlineKeyboardPaginator
 
 from bot import application
@@ -13,8 +19,9 @@ from bot.handlers.on_any_message import users_updater
 from bot.models.reputation_update import ReputationUpdate
 from bot.services import reputation_update
 from bot.services import user as user_service
-from bot.services.auto_delete import auto_delete
-from bot.services.reputation import compute_force, compute_rep, get_rating, get_rating_by_slice
+from bot.services.reputation import compute_force
+from bot.services.reputation import compute_rep
+from bot.services.reputation import get_rating_by_slice
 
 logger = logging.getLogger(__name__)
 
@@ -37,7 +44,6 @@ async def on_reputation_change(update: Update, context: ContextTypes.DEFAULT_TYP
         error_message = await message.reply_text("❌ Вы не можете изменить репутацию бота!")
 
     if error_message:
-        # auto_delete(error_message, context)
         return
 
     from_user_id = message.from_user.id
@@ -56,13 +62,11 @@ async def on_reputation_change(update: Update, context: ContextTypes.DEFAULT_TYP
     if (
         from_user.update_reputation_at and user_service.is_rep_change_available(from_user, 10 * 60) is False
     ):  # 10 minutes
-        new_message = await message.reply_text("❌ Репутацию можно изменять один раз в 10 минут!")
-        # auto_delete(new_message, context)
+        await message.reply_text("❌ Репутацию можно изменять один раз в 10 минут!")
         return
 
     if await reputation_update.is_user_send_rep_to_message(from_user_id, message.reply_to_message.message_id):
-        new_message = await message.reply_text("❌ Вы уже изменяли репутацию, используя это сообщение!")
-        # auto_delete(new_message, context)
+        await message.reply_text("❌ Вы уже изменяли репутацию, используя это сообщение!")
         return
 
     reputation_change = context.reputation[0]["reputation_change"]
@@ -98,22 +102,39 @@ async def on_reputation_change(update: Update, context: ContextTypes.DEFAULT_TYP
 
     logger.info(f"{from_username} has updated {to_username} reputation {new_rep}")
 
-    new_message = await context.bot.send_message(
+    await context.bot.send_message(
         message.chat_id,
-        f"{icon} *{from_username}* ({from_user.reputation:.3f}, {from_user.force:.3f}) "
-        f"обновил(а) вам репутацию ({new_rep})",
+        (
+            f"{icon} *{from_username}* ({from_user.reputation:.3f}, {from_user.force:.3f}) "
+            f"обновил(а) вам репутацию ({new_rep})"
+        ),
         reply_to_message_id=message.reply_to_message.message_id,
         parse_mode=ParseMode.MARKDOWN,
     )
-    # auto_delete(new_message, context)
 
 
 async def show_leaders(update: Update, context: CallbackContext):
-    new_message = await update.effective_message.reply_text(
-        get_rating(await user_service.get_top_by_reputation(15)), parse_mode=ParseMode.MARKDOWN
-    )
+    leaders = await user_service.get_top_by_reputation(15)
 
-    auto_delete(new_message, context, from_message=update.effective_message)
+    if not leaders:
+        await update.effective_message.reply_text("На данный момент нет активных участников для формирования рейтинга")
+        return
+
+    rating_message = "📊 <b>Рейтинг пользователей:</b>\n\n"
+
+    lines = []
+    medals = {0: "🥇", 1: "🥈", 2: "🥉"}
+    for i in range(len(leaders)):
+        medal = ""
+        if i in medals:
+            medal = medals[i]
+        reputation = f"{leaders[i].reputation:.3f}"
+        force = f"{leaders[i].force:.3f}"
+        lines.append(
+            f'{str(i + 1)}. {f"{leaders[i].first_name} " + (leaders[i].last_name if leaders[i].last_name is not None else "")} - {reputation if leaders[i].reputation >= 0 else f"({reputation})"} репутации и {force} влияния {medal}'
+        )
+
+    return await update.effective_message.reply_html(rating_message + "\n".join(lines))
 
 
 async def show_self_rating(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -121,16 +142,18 @@ async def show_self_rating(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = await user_service.get_by_id(user_id)
 
     keyboard = [
-        [InlineKeyboardButton("Показать позицию в рейтинге", callback_data=f"show_pos#{str(user_id)}")],
+        [InlineKeyboardButton("📈 Показать позицию в рейтинге", callback_data=f"show_pos#{str(user_id)}")],
     ]
 
-    new_message = await update.effective_message.reply_text(
-        f'{update.effective_message.from_user.first_name}, у вас {f"{user.reputation:.3f}"} '
-        f'рейтинга и {f"{user.force:.3f}"} очков влияния',
+    await update.effective_message.reply_html(
+        text=(
+            f'{update.effective_message.from_user.first_name}, у вас <b>{user.reputation:.3f}</b> '
+            f'репутации и <b>{user.force:.3f}</b> очков влияния'
+        ),
         reply_markup=InlineKeyboardMarkup(keyboard),
     )
 
-    auto_delete(new_message, context, from_message=update.effective_message)
+
 
 
 async def show_self_rating_position(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -157,22 +180,25 @@ async def about_user_callback(update: Update, context: ContextTypes.DEFAULT_TYPE
         username = context.args[0].replace("@", "").strip()
         user = await user_service.get_by_username(username)
     else:
-        new_message = await msg.reply_text("❌ Вы должны ответить на сообщение пользователя или упомянуть его!")
-        auto_delete(new_message, context, from_message=msg)
+        await msg.reply_text("❌ Вы должны ответить на сообщение пользователя или упомянуть его!")
         return
 
     if user:
-        new_message = await update.effective_message.reply_text(
-            f'Пользователь {user.first_name} имеет {f"{user.reputation:.3f}"} '
-            f'рейтинга и {f"{user.force:.3f}"} очков влияния'
+        await update.effective_message.reply_html(
+            text=(
+                f'Пользователь <b>{user.first_name}</b> имеет <b>{user.reputation:.3f}</b> '
+                f'репутации и <b>{user.force:.3f}</b> очков влияния'
+            )
         )
-
     else:
-        new_message = await update.effective_message.reply_text(
-            f"Пользователь {user.first_name} имеет 0.0 рейтинга и 0.0 очков влияния"
+        await update.effective_message.reply_html(
+            text=(
+                f"Пользователь <b>{user.first_name}</b> имеет <b>0.0</b> репутации и <b>0.0</b> очков влияния"
+            )
         )
 
-    auto_delete(new_message, context, from_message=msg)
+
+
 
 
 async def get_logs_data(user_id: int):
@@ -182,41 +208,30 @@ async def get_logs_data(user_id: int):
     logs_text = ""
 
     if history:
-        for i in range(len(history)):
-            from_user = await user_service.get_by_id(history[i].from_tg_user_id)
-            updated_at = str(history[i].updated_at).split(".")[0]
-            updated_at_date = updated_at.split()[0]
-            updated_at_time = updated_at.split()[1]
+        for i, log in enumerate(history):
+            from_user = await user_service.get_by_id(log.from_tg_user_id)
+            updated_at = str(log.updated_at).split(".")[0]
+            updated_at_date, updated_at_time = updated_at.split()
 
-            # round it up so as not to show too large numbers
-            history[i].reputation_delta = round(history[i].reputation_delta, 3)
-            history[i].force_delta = round(history[i].force_delta, 3)
+            log.reputation_delta = round(log.reputation_delta, 3)
+            log.force_delta = round(log.force_delta, 3)
 
-            rep_delta = (
-                f"+{str(history[i].reputation_delta)}"
-                if history[i].reputation_delta > 0
-                else str(history[i].reputation_delta)
-            )
-
-            force_delta = (
-                f"+{str(history[i].force_delta)}" if history[i].force_delta > 0 else str(history[i].force_delta)
-            )
-
-            new_rep = str(round(history[i].new_reputation, 3))
+            rep_delta = f"+{log.reputation_delta}" if log.reputation_delta > 0 else str(log.reputation_delta)
+            force_delta = f"+{log.force_delta}" if log.force_delta > 0 else str(log.force_delta)
+            new_rep = str(round(log.new_reputation, 3))
 
             index = str(i + 1)
 
+            entry_text = (
+                f"{index}. <b>{from_user.first_name}</b> изменил(а) репутацию {updated_at_date} "
+                f"в {updated_at_time} ({rep_delta}; {force_delta}). Новая репутация: <i>{new_rep}</i>\n\n"
+            )
+
             if i % 10 != 0 or i == 0:
-                logs_text += (
-                    f"{index}. <b>{from_user.first_name}</b> изменил(а) репутацию {updated_at_date} "
-                    f"в {updated_at_time} ({rep_delta}; {force_delta}). Новая репутация: <i>{new_rep}</i>\n\n "
-                )
+                logs_text += entry_text
             else:
                 logs_data.append(logs_text)
-                logs_text = (
-                    f"{index}. <b>{from_user.first_name}</b> изменил(а) репутацию {updated_at_date} "
-                    f"в {updated_at_time} ({rep_delta}; {force_delta}). Новая репутация: <i>{new_rep}</i>\n\n"
-                )
+                logs_text = entry_text
 
         if logs_text != "":
             logs_data.append(logs_text)
@@ -231,12 +246,10 @@ async def reputation_change_history(update: Update, context: ContextTypes.DEFAUL
 
     if len(logs_data) > 0:
         paginator = InlineKeyboardPaginator(len(logs_data), data_pattern="logs#{page}#" + str(msg.from_user.id))
-        new_message = await msg.reply_html(text=logs_data[0], reply_markup=paginator.markup)
+        await msg.reply_html(text=logs_data[0], reply_markup=paginator.markup)
 
     else:
-        new_message = await msg.reply_text("❌ У вас ещё нет истории изменения репутации.")
-
-    auto_delete(new_message, context, from_message=msg)
+        await msg.reply_text("❌ У вас ещё нет истории изменения репутации.")
 
 
 async def reputation_history_page_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):

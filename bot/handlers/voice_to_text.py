@@ -1,7 +1,9 @@
 import asyncio
 
 from telegram import Update
-from telegram.ext import ContextTypes, MessageHandler, filters
+from telegram.ext import ContextTypes
+from telegram.ext import MessageHandler
+from telegram.ext import filters
 
 from bot import application
 from bot.filters import IsChatAllowedFilter

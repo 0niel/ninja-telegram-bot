@@ -9,11 +9,13 @@ from telegram import Update
 from telegram.constants import ParseMode
 from telegram.ext import ContextTypes
 
-from bot import config, handlers
+from bot import config
+from bot import handlers
 from bot.services import daily_job
 from bot.utils import user_api_keys
 
-from . import app_dir, application
+from . import app_dir
+from . import application
 from . import run_polling as polling
 from . import run_webhooks as webhooks
 

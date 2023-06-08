@@ -1,5 +1,4 @@
 import math
-from typing import List
 
 from telegram.helpers import escape_markdown
 
@@ -59,25 +58,6 @@ def compute_rep(rep, force) -> float:
     delta = i_min_size + (math.log(force_new + 1) - i_min_count) * (size_range / i_count_range)
 
     return rep * delta
-
-
-def get_rating(users: List[User]) -> str:
-    if not users:
-        return "На данный момент нет активных участников для формирования рейтинга"
-
-    lines = []
-    medals = {0: "🥇", 1: "🥈", 2: "🥉"}
-    for i in range(len(users)):
-        medal = ""
-        if i in medals:
-            medal = medals[i]
-        reputation = f"{users[i].reputation:.3f}"
-        force = f"{users[i].force:.3f}"
-        lines.append(
-            f'{str(i + 1)}. {f"{users[i].first_name} " + (users[i].last_name if users[i].last_name is not None else "")} - {reputation if users[i].reputation >= 0 else f"({reputation})"} репутации и {force} влияния {medal}'
-        )
-
-    return "*Рейтинг:*\n\n" + escape_markdown("\n".join(lines))
 
 
 def get_rating_by_slice(users_slice: list[tuple["User", int]], user_id: int) -> str:

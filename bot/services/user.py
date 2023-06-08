@@ -108,7 +108,7 @@ def is_rep_change_available(user: User, cooldown_seconds: int) -> bool:
 async def get_top_by_reputation(limit: int):
     """Get top users by reputation"""
     response: APIResponse = (
-        await supabase.table(SUPABASE_USERS_TABLE).select("*").order("reputation", desc=False).limit(limit).execute()
+        await supabase.table(SUPABASE_USERS_TABLE).select("*").order("reputation", desc=True).limit(limit).execute()
     )
     return [User(**user) for user in response.data]
 

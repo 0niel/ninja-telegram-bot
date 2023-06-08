@@ -5,25 +5,31 @@ from enum import IntEnum
 
 import httpx
 from fastapi.requests import Request
-from fastapi.responses import RedirectResponse, Response
-from telegram import (
-    InlineKeyboardButton,
-    InlineKeyboardMarkup,
-    KeyboardButton,
-    ReplyKeyboardMarkup,
-    ReplyKeyboardRemove,
-    Update,
-)
-from telegram.constants import ChatType, ParseMode
-from telegram.ext import CallbackContext, CommandHandler, MessageHandler, filters
+from fastapi.responses import RedirectResponse
+from fastapi.responses import Response
+from telegram import InlineKeyboardButton
+from telegram import InlineKeyboardMarkup
+from telegram import KeyboardButton
+from telegram import ReplyKeyboardMarkup
+from telegram import ReplyKeyboardRemove
+from telegram import Update
+from telegram.constants import ChatType
+from telegram.constants import ParseMode
+from telegram.ext import CallbackContext
+from telegram.ext import CommandHandler
+from telegram.ext import MessageHandler
+from telegram.ext import filters
 
 from bot import application
 from bot.config import get_settings
-from bot.filters import HasUserInArgsFilter
+from bot.models import User
 from bot.services import user as user_service
 from bot.services.auto_delete import auto_delete
 from bot.services.discourse import get_user_by_id
-from bot.utils.user_api_keys import decode_payload, generate_auth_url, generate_nonce
+from bot.utils.decorators import ensure_forum_account_is_linked
+from bot.utils.user_api_keys import decode_payload
+from bot.utils.user_api_keys import generate_auth_url
+from bot.utils.user_api_keys import generate_nonce
 
 logger = logging.getLogger(__name__)
 
@@ -278,36 +284,22 @@ async def auth(update: Update, context: CallbackContext) -> None:
     )
 
 
-async def whois(update: Update, context: CallbackContext) -> None:
+async def whois(update: Update, context: CallbackContext, target_user: User | None = None) -> None:
     msg = update.effective_message
 
-    if msg.reply_to_message:
-        from_user_id = msg.reply_to_message.from_user.id
-        user = await user_service.get_by_id(from_user_id)
-    elif HasUserInArgsFilter().filter(msg):
-        username = context.args[0].replace("@", "").strip()
-        user = await user_service.get_by_username(username)
-    else:
-        new_message = await msg.reply_text("❌ Вы должны ответить на сообщение пользователя или упомянуть его!")
-        auto_delete(new_message, context, from_message=msg)
+    if not target_user:
+        await msg.reply_text("❌ Пользователь не найден!")
         return
 
-    if not user:
-        new_message = await msg.reply_text("❌ Пользователь не найден!")
-        auto_delete(new_message, context, from_message=msg)
-        return
-
-    if not user.discourse_id:
-        new_message = await msg.reply_text("❌ Пользователь не привязал свой аккаунт к боту.")
-        auto_delete(new_message, context, from_message=msg)
+    if not target_user.discourse_id:
+        await msg.reply_text("❌ Пользователь не привязал свой аккаунт к боту.")
         return
 
     try:
-        data = await get_user_by_id(user.discourse_id)
+        data = await get_user_by_id(target_user.discourse_id)
 
         if not data["id"]:
-            new_message = await msg.reply_text("❌ Пользователь не найден.")
-            auto_delete(new_message, context, from_message=msg)
+            await msg.reply_text("❌ Пользователь не найден.")
             return
 
         admin_text = "👑 Администратор" if data["admin"] else ""
@@ -333,16 +325,10 @@ async def whois(update: Update, context: CallbackContext) -> None:
         return
 
 
+@ensure_forum_account_is_linked
 async def notifications(update: Update, context: CallbackContext) -> None:
     msg = update.effective_message
-    user = await user_service.get_by_id(update.effective_user.id)
-
-    if not user:
-        return
-
-    if not user.discourse_id:
-        await msg.reply_text("❌ Вы не привязали свой аккаунт к боту. Используйте /auth.")
-        return
+    user = update.effective_user
 
     if msg.text == ENABLE_NOTIFICATIONS_MESSAGE:
         await user_service.set_discourse_notifications_enabled(user.id, True)
@@ -352,6 +338,7 @@ async def notifications(update: Update, context: CallbackContext) -> None:
         await msg.reply_text("✅ Уведомления выключены.", reply_markup=ReplyKeyboardRemove())
 
 
+@ensure_forum_account_is_linked
 async def notifications_settings(update: Update, context: CallbackContext) -> None:
     if update.effective_chat.type != ChatType.PRIVATE:
         msg = await update.effective_message.reply_text("❌ Эта команда доступна только в личных сообщениях.")
@@ -360,13 +347,6 @@ async def notifications_settings(update: Update, context: CallbackContext) -> No
 
     msg = update.effective_message
     user = await user_service.get_by_id(update.effective_user.id)
-
-    if not user:
-        return
-
-    if not user.discourse_id:
-        await msg.reply_text("❌ Вы не привязали свой аккаунт к боту. Используйте /auth.")
-        return
 
     if user.discourse_notifications_enabled:
         text = "✅ Уведомления включены."

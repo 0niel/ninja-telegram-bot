@@ -1,7 +1,12 @@
 import base64
-from typing import Any, Coroutine, Dict, Union
+from typing import Any
+from typing import Coroutine
+from typing import Dict
+from typing import Union
 
-from postgrest import AsyncFilterRequestBuilder, AsyncPostgrestClient, AsyncRequestBuilder
+from postgrest import AsyncFilterRequestBuilder
+from postgrest import AsyncPostgrestClient
+from postgrest import AsyncRequestBuilder
 from postgrest.constants import DEFAULT_POSTGREST_CLIENT_TIMEOUT
 from supabase import Client as SyncClient
 from supabase.lib.client_options import ClientOptions

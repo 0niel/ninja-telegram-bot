@@ -1,6 +1,7 @@
 import uvicorn
 from fastapi.requests import Request
-from fastapi.responses import JSONResponse, Response
+from fastapi.responses import JSONResponse
+from fastapi.responses import Response
 from telegram import Update
 
 import bot.handlers.discourse as discourse

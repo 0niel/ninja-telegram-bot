@@ -1,6 +1,7 @@
 from telegram import Update
 from telegram.constants import ParseMode
-from telegram.ext import CallbackContext, CommandHandler
+from telegram.ext import CallbackContext
+from telegram.ext import CommandHandler
 
 from bot import application
 from bot.services.auto_delete import auto_delete

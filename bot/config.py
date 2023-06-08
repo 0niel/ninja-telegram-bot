@@ -1,7 +1,11 @@
 from functools import lru_cache
 from typing import Optional
 
-from pydantic import AnyHttpUrl, BaseSettings, Field, PostgresDsn, validator
+from pydantic import AnyHttpUrl
+from pydantic import BaseSettings
+from pydantic import Field
+from pydantic import PostgresDsn
+from pydantic import validator
 
 
 class AsyncPostgresDsn(PostgresDsn):

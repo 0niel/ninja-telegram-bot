@@ -2,24 +2,21 @@ import logging
 
 from telegram import Update
 from telegram.constants import ParseMode
-from telegram.ext import ContextTypes, MessageHandler, filters
+from telegram.ext import ContextTypes
+from telegram.ext import MessageHandler
+from telegram.ext import filters
 from telegram.helpers import escape_markdown
 
 from bot import application
 from bot.filters import IsChatAllowedFilter
-from bot.services import user
+from bot.handlers.on_any_message import users_updater
 from bot.services.auto_delete import auto_delete
 
 logger = logging.getLogger(__name__)
 
 
 async def on_join(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await user.update_user_names(
-        update.effective_user.id,
-        update.effective_user.username,
-        update.effective_user.first_name,
-        update.effective_user.last_name,
-    )
+    await users_updater(update, context)
 
     guidelines_url = "https://mirea.ninja/guidelines"
     title = update.effective_chat.title

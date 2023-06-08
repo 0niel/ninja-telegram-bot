@@ -1,8 +1,8 @@
 from telegram import Update
-from telegram.ext import CommandHandler, ContextTypes
+from telegram.ext import CommandHandler
+from telegram.ext import ContextTypes
 
 from bot import application
-from bot.services.auto_delete import auto_delete
 
 RULES_TEXT = (
     "Чат является важным средством коммуникации, но при чрезмерном использовании он "
@@ -21,10 +21,9 @@ RULES_TEXT = (
 
 
 async def rules(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    message = await update.effective_message.reply_html(
+    await update.effective_message.reply_html(
         RULES_TEXT,
     )
-    auto_delete(message, context, from_message=update.effective_message)
 
 
 # show chat rules

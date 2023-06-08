@@ -3,9 +3,11 @@ import random
 
 import pytz
 from telegram.constants import ParseMode
-from telegram.ext import ContextTypes, JobQueue
+from telegram.ext import ContextTypes
+from telegram.ext import JobQueue
 
-from bot import config, timezone_offset
+from bot import config
+from bot import timezone_offset
 from bot.services import messages_history
 from bot.services import user as user_service
 from bot.utils.plural_forms import get_plural_forms
