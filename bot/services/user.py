@@ -88,7 +88,8 @@ async def update_rep_and_force(from_user_id: int, to_user_id: int, new_rep: floa
     await supabase.table(SUPABASE_USERS_TABLE).update({"reputation": new_rep, "force": new_force}).eq(
         "id", to_user_id
     ).execute()
-    await supabase.table(SUPABASE_USERS_TABLE).update({"update_reputation_at": datetime.now(timezone_offset)}).eq(
+    serializable_datetime = datetime.now(timezone_offset).isoformat()
+    await supabase.table(SUPABASE_USERS_TABLE).update({"update_reputation_at": serializable_datetime}).eq(
         "id", from_user_id
     ).execute()
 
