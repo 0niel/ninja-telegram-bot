@@ -6,7 +6,7 @@ from pydantic import Field
 
 
 class User(BaseModel):
-    id: int = Field(..., index=True, unique=True)
+    id: Optional[int] = None
     username: Optional[str] = None
     first_name: Optional[str] = None
     last_name: Optional[str] = None
