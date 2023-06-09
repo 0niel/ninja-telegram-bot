@@ -5,7 +5,7 @@ from pydantic import BaseModel
 
 
 class ReputationUpdate(BaseModel):
-    id: int
+    id: int | None = None
     from_tg_user_id: int
     to_tg_user_id: Optional[int] = None
     message_id: Optional[int] = None

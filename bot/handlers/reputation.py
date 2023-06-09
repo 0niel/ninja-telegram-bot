@@ -82,8 +82,8 @@ async def on_reputation_change(update: Update, context: ContextTypes.DEFAULT_TYP
     await reputation_update.create(
         ReputationUpdate(
             message_id=message.reply_to_message.message_id,
-            from_user_id=from_user_id,
-            to_user_id=to_user_id,
+            from_tg_user_id=from_user_id,
+            to_tg_user_id=to_user_id,
             reputation_delta=new_user_rep_delta,
             force_delta=new_user_force_delta,
             new_reputation=new_user_rep,
