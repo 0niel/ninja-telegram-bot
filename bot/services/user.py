@@ -10,10 +10,10 @@ from bot.models import User
 
 
 async def update_user_names(user_id: int, username: str, first_name: str, last_name: str):
-    response: APIResponse = await supabase.table(SUPABASE_USERS_TABLE).select("*").eq("id", user_id).single().execute()
+    response: APIResponse = await supabase.table(SUPABASE_USERS_TABLE).select("*").eq("id", user_id).execute()
 
     if response.data:
-        user = User(**response.data)
+        user = User(**response.data[0])
         user.username = username
         user.first_name = first_name
         user.last_name = last_name
@@ -34,10 +34,9 @@ async def update_user_names(user_id: int, username: str, first_name: str, last_n
 
 
 async def get_by_id(user_id: int) -> User | None:
-    response: APIResponse = await supabase.table(SUPABASE_USERS_TABLE).select("*").eq("id", user_id).single().execute()
+    response: APIResponse = await supabase.table(SUPABASE_USERS_TABLE).select("*").eq("id", user_id).execute()
 
-    if response.data:
-        return User(**response.data)
+    return User(**response.data[0]) if response.data else None
 
 
 async def set_discourse_nonce(user_id: int, nonce: str):
