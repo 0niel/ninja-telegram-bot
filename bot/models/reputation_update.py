@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class ReputationUpdate(BaseModel):
@@ -13,4 +13,4 @@ class ReputationUpdate(BaseModel):
     force_delta: Optional[float] = None
     new_reputation: float
     new_force: float
-    updated_at: datetime
+    updated_at: datetime = Field(default_factory=datetime.now)
