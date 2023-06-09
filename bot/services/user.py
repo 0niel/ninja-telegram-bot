@@ -30,7 +30,7 @@ async def update_user_names(user_id: int, username: str, first_name: str, last_n
             first_name=first_name,
             last_name=last_name,
         )
-        await supabase.table(SUPABASE_USERS_TABLE).insert(user.dict()).execute()
+        await supabase.table(SUPABASE_USERS_TABLE).insert(user.dict(exclude={"id", "updated_at", "created_at", "update_reputation_at"})).execute()
 
 
 async def get_by_id(user_id: int) -> User | None:
