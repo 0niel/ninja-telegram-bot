@@ -26,6 +26,7 @@ async def update_user_names(user_id: int, username: str, first_name: str, last_n
         ).eq("id", user_id).execute()
     else:
         user = User(
+            id=user_id,
             username=username,
             first_name=first_name,
             last_name=last_name,
