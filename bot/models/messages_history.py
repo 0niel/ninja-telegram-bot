@@ -10,3 +10,6 @@ class MessagesHistory(BaseModel):
     tg_user_id: int
     date: datetime.date = Field(default_factory=datetime.date.today)
     messages: Optional[int]
+
+    class Config:
+        json_encoders = {datetime.date: lambda v: v.isoformat()}

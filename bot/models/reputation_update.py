@@ -14,3 +14,6 @@ class ReputationUpdate(BaseModel):
     new_reputation: float
     new_force: float
     updated_at: datetime = Field(default_factory=datetime.now)
+
+    class Config:
+        json_encoders = {datetime: lambda v: v.isoformat()}
