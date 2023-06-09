@@ -5,8 +5,8 @@ from bot.models import ReputationUpdate
 
 async def create(reputation_update: ReputationUpdate) -> None:
     """Create reputation update"""
-
-    await supabase.table(SUPABASE_REPUTATION_UPDATES_TABLE).insert(reputation_update.dict(exclude={"id"})).execute()
+    data = reputation_update.dict(exclude={"id", "updated_at"})
+    await supabase.table(SUPABASE_REPUTATION_UPDATES_TABLE).insert(data).execute()
 
 
 async def get_by_user_id(user_id: int, limit=100) -> list[ReputationUpdate]:
