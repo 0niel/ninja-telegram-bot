@@ -27,6 +27,7 @@ from bot.services import user as user_service
 from bot.services.auto_delete import auto_delete
 from bot.services.discourse import get_user_by_id
 from bot.utils.decorators import ensure_forum_account_is_linked
+from bot.utils.decorators import ensure_reply_or_mention
 from bot.utils.user_api_keys import decode_payload
 from bot.utils.user_api_keys import generate_auth_url
 from bot.utils.user_api_keys import generate_nonce
@@ -284,6 +285,7 @@ async def auth(update: Update, context: CallbackContext) -> None:
     )
 
 
+@ensure_reply_or_mention
 async def whois(update: Update, context: CallbackContext, target_user: User | None = None) -> None:
     msg = update.effective_message
 
