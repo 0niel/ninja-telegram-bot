@@ -68,11 +68,10 @@ async def set_discourse_notifications_enabled(user_id: int, enabled: bool):
 
 async def get_by_discourse_id(discourse_id: int) -> User | None:
     response: APIResponse = (
-        await supabase.table(SUPABASE_USERS_TABLE).select("*").eq("discourse_id", discourse_id).single().execute()
+        await supabase.table(SUPABASE_USERS_TABLE).select("*").eq("discourse_id", discourse_id).execute()
     )
 
-    if response.data:
-        return User(**response.data)
+    return User(**response.data[0]) if response.data else None
 
 
 async def get_by_username(username: str) -> User | None:
